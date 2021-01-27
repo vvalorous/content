@@ -21,7 +21,7 @@ INCIDENT_LIST_MARKDOWN_HEADERS = ['identifier', 'reference_id', 'url', 'status',
 class Client(BaseClient):
     URL_ENCODED_HEADER = {'Content-Type': 'application/x-www-form-urlencoded'}
     JSON_CONTENT_HEADER = {'Content-Type': 'application/json'}
-    MULTIPART_DATA_HEADER = {'Content-Type: multipart/form-data'}
+    MULTIPART_DATA_HEADER = {'Content-Type': 'multipart/form-data'}
 
     def __init__(self, api_key: str, base_url: str, verify: bool, proxy: bool):
         super().__init__(base_url=base_url, verify=verify, proxy=proxy)
