@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from dateutil import parser as dp
+
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 from CommonServerUserPython import *  # noqa
 
@@ -8,6 +10,11 @@ MINIMUM_PAGE_VALUE = 0
 MINIMUM_LIMIT_INCIDENTS_VALUE = 1
 MINIMUM_LIMIT_BRANDS_VALUE = 20
 BASE_URL = 'https://www.phishportal.com/v1/'
+
+INCIDENT_LIST_MARKDOWN_HEADERS = ['identifier', 'reference_id', 'url', 'status', 'type', 'brand', 'client',
+                                  'content_ip', 'host', 'host_country', 'host_timezone', 'created_by', 'discovered_by',
+                                  'current_duration', 'active_duration', 'date_opened', 'date_closed',
+                                  'additional_urls', 'link']
 ''' CLIENT CLASS '''
 
 
@@ -32,9 +39,9 @@ class Client(BaseClient):
         integration_context = demisto.getIntegrationContext()
         bearer_token = integration_context.get('bearer_token', self.api_key)
         valid_until = integration_context.get('valid_until')
-        utc_time_now = datetime.utcnow()
+        utc_time_now = datetime.now(timezone.utc)
         if bearer_token and valid_until:
-            date_valid_until = datetime.fromisoformat(valid_until)
+            date_valid_until = dp.parse(valid_until)
             if utc_time_now < date_valid_until:
                 # Bearer Token is still valid - did not expire yet
                 return bearer_token
@@ -278,7 +285,8 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
         outputs=outputs,
         outputs_key_field='identifier',
         raw_response=raw_response,
-        readable_output=tableToMarkdown("FraudWatch Incidents", outputs, removeNull=True)
+        readable_output=tableToMarkdown("FraudWatch Incidents", outputs, INCIDENT_LIST_MARKDOWN_HEADERS,
+                                        removeNull=True)
     )
 
 
@@ -321,7 +329,7 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     incident_type = args.get('type', 'Type not found')
     reference_id = args.get('reference_id')
     primary_url = args.get('primary_url', '')
-    urls = argToList(args.get('urls', 'Incident ID is missing'))
+    urls = args.get('urls')
     evidence = args.get('evidence')
     instructions = args.get('instructions')
 
@@ -463,12 +471,17 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     outputs = deepcopy(raw_response)
     outputs['identifier'] = incident_id
 
+    if remove_empty_elements(raw_response):
+        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", outputs, removeNull=True)
+    else:
+        human_readable = f'### Incident id {incident_id} has empty forensic data'
+
     return CommandResults(
         outputs_prefix='FraudWatch.IncidentForensicData',
         outputs=outputs,
         outputs_key_field='identifier',
         raw_response=raw_response,
-        readable_output=tableToMarkdown("FraudWatch Incident Forensic Data", outputs, removeNull=True)
+        readable_output=human_readable
     )
 
 
@@ -662,7 +675,7 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
         outputs=outputs,
         outputs_key_field='name',
         raw_response=raw_response,
-        readable_output=tableToMarkdown("FraudWatch Brands", outputs, removeNull=True)
+        readable_output=tableToMarkdown("FraudWatch Brands", outputs, ['name', 'active', 'client'], removeNull=True)
     )
 
 
