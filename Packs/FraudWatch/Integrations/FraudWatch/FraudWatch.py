@@ -11,6 +11,8 @@ MINIMUM_LIMIT_INCIDENTS_VALUE = 1
 MINIMUM_LIMIT_BRANDS_VALUE = 20
 BASE_URL = 'https://www.phishportal.com/v1/'
 
+FRAUD_WATCH_DATE_FORMAT = '%Y-%m-%d'
+
 INCIDENT_LIST_MARKDOWN_HEADERS = ['identifier', 'reference_id', 'url', 'status', 'type', 'brand', 'client',
                                   'content_ip', 'host', 'host_country', 'host_timezone', 'created_by', 'discovered_by',
                                   'current_duration', 'active_duration', 'date_opened', 'date_closed',
@@ -40,22 +42,29 @@ class Client(BaseClient):
         bearer_token = integration_context.get('bearer_token', self.api_key)
         valid_until = integration_context.get('valid_until')
         utc_time_now = datetime.now(timezone.utc)
+
         if bearer_token and valid_until:
-            date_valid_until = dp.parse(valid_until)
-            if utc_time_now < date_valid_until:
+            if utc_time_now < valid_until:
                 # Bearer Token is still valid - did not expire yet
                 return bearer_token
+
         response = self.refresh_token_request(bearer_token)
         bearer_token = response.get('token')
         expiration_time = response.get('expiry')
+
         if not bearer_token or not expiration_time:
             raise DemistoException(
                 f'Unexpected response returned by FraudWatch when trying to refresh token: {response}')
-        integration_context = {
+
+        new_integration_context = {
             'bearer_token': bearer_token,
-            'valid_until': expiration_time
+            'valid_until': dp.parse(expiration_time)
         }
-        demisto.setIntegrationContext(integration_context)
+        if 'last_fetch_date_time' in integration_context:
+            new_integration_context['last_fetch_date_time'] = integration_context['last_fetch_date_time']
+
+        demisto.setIntegrationContext(new_integration_context)
+
         return bearer_token
 
     def refresh_token_request(self, bearer_token: str):
@@ -216,6 +225,58 @@ def get_and_validate_int_argument(args: Dict, argument_name: str, minimum: int) 
 
 
 ''' COMMAND FUNCTIONS '''
+
+
+def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
+    """
+
+    Args:
+        client:
+        params:
+        last_run:
+
+    Returns:
+
+    """
+    brand = params.get('brand')
+    status = params.get('status')
+
+    current_time = datetime.now(timezone.utc)
+
+    fetch_time_string = params.get('fetch_time', '5 days').strip()
+    first_fetch_time = dp.parse(fetch_time_string).astimezone(timezone.utc)  # TODO assure transformed to utc
+    last_fetch_date_time = last_run.get('last_fetch_date_time', first_fetch_time)
+    from_date = last_fetch_date_time.strftime(FRAUD_WATCH_DATE_FORMAT)
+    to_date = current_time.strftime(FRAUD_WATCH_DATE_FORMAT)
+
+    raw_response = client.fraud_watch_incidents_list(brand=brand, status=status, page=None, limit=None,
+                                                     from_date=from_date, to_date=to_date)
+
+    if raw_response.get('error'):
+        raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
+    incidents = raw_response.get('incidents')
+    if incidents is None:
+        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
+
+    incidents_obj_list: List[Dict[str, Any]] = []
+    current_run_max_date_time = None
+    for incident in incidents:
+        try:
+            incident_date_opened = dp.parse(incident.get('date_opened'))
+            if incident_date_opened < last_fetch_date_time:
+                continue
+        except Exception as e:
+    #         current_run_max_epoch_time = max(current_run_max_epoch_time, last_occurrence_time)
+    #         incident = {
+    #             'name': 'Nutanix Hypervisor Alert',
+    #             'type': 'Nutanix Hypervisor Alert',
+    #             'occurred': occurred,
+    #             'rawJSON': json.dumps(remove_empty_elements(alert))
+    #         }
+    #
+    #         incidents.append(incident)
+
+    # return incidents, {'last_fetch_epoch_time': max(current_run_max_epoch_time, last_fetch_epoch_time)}
 
 
 def test_module(client: Client) -> str:
@@ -720,6 +781,12 @@ def main() -> None:
         if command == 'test-module':
             result = test_module(client)
             return_results(result)
+
+        elif command == 'fetch-incidents':
+            last_run = demisto.getLastRun()
+            incidents, next_run = fetch_incidents_command(client, params, last_run)
+            demisto.setLastRun(next_run)
+            demisto.incidents(incidents)
 
         elif command in commands:
             return_results(commands[command](client, demisto.args()))
