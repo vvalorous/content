@@ -309,7 +309,7 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     - Not given or unknown brand.
     - Not given or unknown incident type.
     - Not given primary url.
-    - No data given. # TODO TOM CHECK IF POSSIBLE IN PYTHON
+    - No data given.
     Args:
         client (Client): FraudWatch client to perform the API calls.
         args (Dict): Demisto arguments.
@@ -317,19 +317,16 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     Returns:
         CommandResults.
     """
-    # TODO HANDLE 400 IF DATA EMPTY
-    # TODO HANDLE 422 FOR UNKNOWN OR NO TYPE GIVEN
-    # TODO HANDLE 422 FOR PRIMARY_URL NOT GIVEN
-    brand = args.get('brand', 'Brand was not given')
-    incident_type = args.get('type', 'Type was not given')
+    brand = args.get('brand', 'Brand not found')
+    incident_type = args.get('type', 'Type not found')
     reference_id = args.get('reference_id')
     primary_url = args.get('primary_url', '')
-    urls = argToList(args.get('urls', 'Incident ID was not given'))
+    urls = argToList(args.get('urls', 'Incident ID is missing'))
     evidence = args.get('evidence')
     instructions = args.get('instructions')
 
-    raw_response = client.fraud_watch_incident_report(brand, incident_type, reference_id, primary_url, urls, evidence,
-                                                      instructions)
+    raw_response = client.fraud_watch_incident_report(brand, incident_type, reference_id, primary_url, urls,
+                                                      evidence, instructions)
 
     return CommandResults(
         outputs_prefix='FraudWatch.Incident',
@@ -355,7 +352,7 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     Known possible errors that could cause error to be returned by FraudWatch service:
     - Unknown incident id.
     - Not given or unknown brand.
-    - No data given. # TODO TOM CHECK IF POSSIBLE IN PYTHON
+    - No data given.
 
     Args:
         client (Client): FraudWatch client to perform the API calls.
@@ -364,31 +361,27 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     Returns:
         CommandResults.
     """
-    # TODO HANDLE 400 IF DATA EMPTY
-    # TODO HANDLE 404 IF INCIDENT NOT FOUND
-    # TODO HANDLE 422 FOR BRAND NOT FOUND
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
     brand = args.get('brand')
     reference_id = args.get('reference_id')
     instructions = args.get('instructions')
 
     if not brand and not reference_id and not instructions:
-        raise DemistoException(f'No data was given to update for incident id: {incident_id}')
+        raise DemistoException(f'No data was given to update for incident id: ({incident_id})')
 
-    raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
-    # try:
-    #     raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
-    # except DemistoException as e:
-    #     if 'Not Found' in str(e):
-    #         raise DemistoException(f'Page not found. Make sure incident id {incident_id} is correct')
-    #     raise e
+    try:
+        raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
+    except DemistoException as e:
+        if 'Not Found' in str(e):
+            raise DemistoException(f'Page not found. Make sure incident id: ({incident_id}) is correct')
+        raise e
 
     if 'Updated sucessfully' not in raw_response:
         raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
     return CommandResults(
         raw_response=raw_response,
-        readable_output=f'Incident with ID {incident_id} was updated successfully'
+        readable_output=f'### Incident with ID {incident_id} was updated successfully'
     )
 
 
@@ -413,8 +406,8 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id')
-    reference_id = args.get('reference_id')
+    incident_id = args.get('incident_id', '')
+    reference_id = args.get('reference_id', '')
 
     if (incident_id and reference_id) or (not incident_id and not reference_id):
         raise DemistoException('Exactly one of reference id or incident id must be given.')
@@ -424,9 +417,9 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
             raw_response = client.fraud_watch_incident_list_by_id(incident_id)
         except DemistoException as e:
             if 'Not Found' in str(e):
-                raise DemistoException(f'Page not found. Make sure incident id {incident_id} is correct')
+                raise DemistoException(f'Page not found. Make sure incident id: ({incident_id}) is correct')
             raise e
-    elif reference_id:
+    else:
         try:
             raw_response = client.fraud_watch_incident_get_by_reference(reference_id)
         except DemistoException as e:
@@ -458,13 +451,13 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
 
     try:
         raw_response = client.fraud_watch_incident_forensic_get(incident_id)
     except DemistoException as e:
         if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id {incident_id} is correct')
+            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
         raise e
 
     outputs = deepcopy(raw_response)
@@ -497,7 +490,7 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
     page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
     limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
 
@@ -505,9 +498,9 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
         raw_response = client.fraud_watch_incident_contact_emails_list(incident_id, page, limit)
     except DemistoException as e:
         if 'Not Found' in str(e):
-            page_error_msg = f'''Make sure page argument: {page} is within bounds''' if page else ''
-            unknown_incident_msg = f'''Make sure incident id: {incident_id} is correct'''
-            raise DemistoException(f'''Error occurred. {page_error_msg}{unknown_incident_msg}''')
+            page_error_msg = f'''Make sure page index: ({page}) is within bounds.''' if page else ''
+            unknown_incident_msg = f'''Make sure incident id: ({incident_id}) is correct.'''
+            raise DemistoException(f'''Error occurred. {page_error_msg} {unknown_incident_msg}''')
         raise e
 
     return CommandResults(
@@ -535,7 +528,7 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
     message_content = args.get('message_content')
 
     if not message_content:
@@ -545,13 +538,13 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
         raw_response = client.fraud_watch_incident_messages_add(incident_id, message_content)
     except DemistoException as e:
         if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id {incident_id} is correct')
+            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
         raise e
 
     if 'Message add sucessfully' not in raw_response:
         raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
-    human_readable = f'### Message for incident id {incident_id} with content {message_content} added successfully.'
+    human_readable = f'### Message for incident id {incident_id} with content {message_content} was added successfully.'
 
     return CommandResults(
         raw_response=raw_response,
@@ -575,7 +568,7 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
     raw_urls = argToList(args.get('urls'))
 
     if not raw_urls:
@@ -591,7 +584,7 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
         raw_response = client.fraud_watch_incident_urls_add(incident_id, urls)
     except DemistoException as e:
         if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id {incident_id} is correct')
+            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
         raise e
 
     return CommandResults(
@@ -618,7 +611,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID was not given')
+    incident_id = args.get('incident_id', 'Incident ID is missing')
     entry_id = args.get('attachment')
 
     try:
@@ -637,7 +630,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
             )
     except DemistoException as e:
         if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id {incident_id} is correct')
+            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
         raise e
     except Exception:
         raise DemistoException(F"Entry {entry_id} does not contain a file.")
@@ -667,7 +660,7 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
     return CommandResults(
         outputs_prefix='FraudWatch.Brand',
         outputs=outputs,
-        outputs_key_field='name',  # TODO CHECK IF UNIQUE
+        outputs_key_field='name',
         raw_response=raw_response,
         readable_output=tableToMarkdown("FraudWatch Brands", outputs, removeNull=True)
     )
