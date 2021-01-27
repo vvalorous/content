@@ -38,7 +38,7 @@ class Client(BaseClient):
             if utc_time_now < date_valid_until:
                 # Bearer Token is still valid - did not expire yet
                 return bearer_token
-        response = self.refresh_token_request()
+        response = self.refresh_token_request(bearer_token)
         bearer_token = response.get('token')
         expiration_time = response.get('expiry')
         if not bearer_token or not expiration_time:
@@ -51,11 +51,11 @@ class Client(BaseClient):
         demisto.setIntegrationContext(integration_context)
         return bearer_token
 
-    def refresh_token_request(self):
+    def refresh_token_request(self, bearer_token: str):
         return self._http_request(
             method='POST',
             url_suffix='token/refresh',
-            headers=self.base_headers
+            headers={'Authorization': f'Bearer {bearer_token}'}
         )
 
     def fraud_watch_incidents_list(self, brand: Optional[str], status: Optional[str], page: Optional[int],
