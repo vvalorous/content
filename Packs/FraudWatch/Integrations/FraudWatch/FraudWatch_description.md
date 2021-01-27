@@ -1,8 +1,11 @@
-## BaseIntegration Help
+### Retrieve the API key of your product for the first time
 
-Markdown file for integration configuration  help snippet. In this file add:
-- Brief information about how to retrieve the API key of your product
-- Other useful information on how to configure your integration in XSOAR
+1. Navigate to [Phishportal site](https://www.phishportal.com/).
+2. Enter your Username and Password.
+3. On your left side, click on 'Portal API'.
+4. On top of the page, you should see API Token.
+5. If API token is out of date, scroll down to Other section, and click on POST /token/refresh.
+6. Scroll down, and click on 'Try it out!' inside the window opened after you clicked.
+7. Refresh page, and a new API token in date should appear on top of the page.
 
-Since this is a Markdown file, we encourage you to use MD formatting for sections, sub-sections, lists, etc.
-
+**after first configured API token, Demisto refreshes the key when it becomes out dated.**

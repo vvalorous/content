@@ -1,17 +1,13 @@
-"""Base Integration for Cortex XSOAR - Unit Tests file
-
-Pytest Unit Tests: all funcion names must start with "test_"
-
-More details: https://xsoar.pan.dev/docs/integrations/unit-testing
-
-MAKE SURE YOU REVIEW/REPLACE ALL THE COMMENTS MARKED AS "TODO"
-
-You must add at least a Unit Test function for every XSOAR command
-you are implementing with your integration
 """
-
-import json
+    FraudWatch - Unit Tests file
+"""
 import io
+import json
+
+import pytest
+
+from CommonServerPython import DemistoException
+from FraudWatch import get_and_validate_int_argument
 
 
 def util_load_json(path):
@@ -19,24 +15,50 @@ def util_load_json(path):
         return json.loads(f.read())
 
 
-# TODO: REMOVE the following dummy unit test function
-def test_baseintegration_dummy():
-    """Tests helloworld-say-hello command function.
-
-    Checks the output of the command function with the expected output.
-
-    No mock is needed here because the say_hello_command does not call
-    any external API.
+@pytest.mark.parametrize('args, argument_name, minimum, expected',
+                         [
+                             ({'page': 3}, 'limit', 4, None),
+                             ({'limit': 4}, 'limit', 3, 4),
+                             ({'limit': 2}, 'limit', 2, 2)
+                         ])
+def test_get_and_validate_int_argument_valid_arguments(args, argument_name, minimum, expected):
     """
-    from BaseIntegration import Client, baseintegration_dummy_command
+    Given:
+     - Demisto arguments.
+     - Argument name to extract from Demisto arguments as number.
+     - Minimum possible value for argument.
 
-    client = Client(base_url='some_mock_url', verify=False)
-    args = {
-        'dummy': 'this is a dummy response'
-    }
-    response = baseintegration_dummy_command(client, args)
+    When:
+     - Case b: Argument does not exist.
+     - Case c: Argument exist and is above minimum.
+     - Case c: Argument exist and equals minimum.
 
-    mock_response = util_load_json('test_data/baseintegration-dummy.json')
+    Then:
+     - Case a: Ensure that None is returned (limit argument does not exist).
+     - Case b: Ensure that limit is returned (4).
+     - Case c: Ensure that limit is returned (2).
+    """
+    assert (get_and_validate_int_argument(args, argument_name, minimum)) == expected
 
-    assert response.outputs == mock_response
-# TODO: ADD HERE unit tests for every command
+
+@pytest.mark.parametrize('args, argument_name, minimum, maximum, default_value, expected_error_message',
+                         [({'limit': 5}, 'limit', 6, None, None, 'limit should be equal or higher than 6'),
+                          ({'limit': 5}, 'limit', None, 4, None, 'limit should be equal or less than 4'),
+                          ({}, 'limit', 3, 4, 5, 'limit should be equal or less than 4')
+                          ])
+def test_get_and_validate_int_argument_invalid_arguments(args, argument_name, minimum, maximum, default_value,
+                                                         expected_error_message):
+    """
+    Given:
+     - Demisto arguments.
+     - Argument name to extract from Demisto arguments as number.
+     - Minimum value for argument.
+
+    When:
+     - Argument exists, minimum is higher than argument value.
+
+    Then:
+     - Ensure that DemistoException is thrown with error message which indicates that value is below minimum.
+    """
+    with pytest.raises(DemistoException, match='limit should be equal or higher than 2'):
+        get_and_validate_int_argument({'limit': 3}, 'limit', 2)
