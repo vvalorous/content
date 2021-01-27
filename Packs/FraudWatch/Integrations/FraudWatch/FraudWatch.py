@@ -106,10 +106,11 @@ class Client(BaseClient):
                 evidence=evidence,
                 instructions=instructions
             ),
-            headers=self.base_headers | self.URL_ENCODED_HEADER
+            headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
-    def fraud_watch_incident_update(self, incident_id: str, brand: str, reference_id: str, instructions: str):
+    def fraud_watch_incident_update(self, incident_id: str, brand: Optional[str], reference_id: Optional[str],
+                                    instructions: Optional[str]):
         return self._http_request(
             method='PUT',
             url_suffix=f'incident/{incident_id}',
@@ -118,7 +119,7 @@ class Client(BaseClient):
                 reference_id=reference_id,
                 instructions=instructions
             ),
-            headers=self.base_headers | self.URL_ENCODED_HEADER
+            headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
     def fraud_watch_incident_get_by_reference(self, reference_id: str):
@@ -151,7 +152,7 @@ class Client(BaseClient):
             method='POST',
             url_suffix=f'incident/{incident_id}/message/add',
             data=message_content,
-            headers=self.base_headers | self.JSON_CONTENT_HEADER
+            headers={**self.base_headers, **self.JSON_CONTENT_HEADER}
         )
 
     def fraud_watch_incident_urls_add(self, incident_id: str, urls: Dict[str, List[str]]):
@@ -159,10 +160,10 @@ class Client(BaseClient):
             method='POST',
             url_suffix=f'incident/{incident_id}/urls/add',
             data=urls,
-            headers=self.base_headers | self.URL_ENCODED_HEADER
+            headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
-    def fraud_watch_brands_list(self, page, limit):
+    def fraud_watch_brands_list(self, page: Optional[int], limit: Optional[int]):
         return self._http_request(
             method='GET',
             url_suffix='account/brands',
@@ -315,11 +316,11 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     # TODO HANDLE 400 IF DATA EMPTY
     # TODO HANDLE 422 FOR UNKNOWN OR NO TYPE GIVEN
     # TODO HANDLE 422 FOR PRIMARY_URL NOT GIVEN
-    brand = args.get('brand')
-    incident_type = args.get('type')
+    brand = args.get('brand', 'Brand was not given')
+    incident_type = args.get('type', 'Type was not given')
     reference_id = args.get('reference_id')
-    primary_url = args.get('primary_url')
-    urls = argToList(args.get('urls'))
+    primary_url = args.get('primary_url', '')
+    urls = argToList(args.get('urls', 'Incident ID was not given'))
     evidence = args.get('evidence')
     instructions = args.get('instructions')
 
@@ -362,7 +363,7 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     # TODO HANDLE 400 IF DATA EMPTY
     # TODO HANDLE 404 IF INCIDENT NOT FOUND
     # TODO HANDLE 422 FOR BRAND NOT FOUND
-    incident_id = args.get('incident_id')
+    incident_id = args.get('incident_id', 'Incident ID was not given')
     brand = args.get('brand')
     reference_id = args.get('reference_id')
     instructions = args.get('instructions')
@@ -421,7 +422,7 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
             if 'Not Found' in str(e):
                 raise DemistoException(f'Page not found. Make sure incident id {incident_id} is correct')
             raise e
-    else:
+    elif reference_id:
         try:
             raw_response = client.fraud_watch_incident_get_by_reference(reference_id)
         except DemistoException as e:
@@ -453,7 +454,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id')
+    incident_id = args.get('incident_id', 'Incident ID was not given')
 
     try:
         raw_response = client.fraud_watch_incident_forensic_get(incident_id)
@@ -492,7 +493,7 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id')
+    incident_id = args.get('incident_id', 'Incident ID was not given')
     page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
     limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
 
@@ -530,7 +531,7 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id')
+    incident_id = args.get('incident_id', 'Incident ID was not given')
     message_content = args.get('message_content')
 
     if not message_content:
@@ -570,7 +571,7 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id')
+    incident_id = args.get('incident_id', 'Incident ID was not given')
     raw_urls = argToList(args.get('urls'))
 
     if not raw_urls:

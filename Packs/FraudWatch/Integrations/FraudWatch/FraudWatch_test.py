@@ -29,8 +29,8 @@ def test_get_and_validate_int_argument_valid_arguments(args, argument_name, mini
      - Minimum possible value for argument.
 
     When:
-     - Case b: Argument does not exist.
-     - Case c: Argument exist and is above minimum.
+     - Case a: Argument does not exist.
+     - Case b: Argument exist and is above minimum.
      - Case c: Argument exist and equals minimum.
 
     Then:
@@ -41,13 +41,7 @@ def test_get_and_validate_int_argument_valid_arguments(args, argument_name, mini
     assert (get_and_validate_int_argument(args, argument_name, minimum)) == expected
 
 
-@pytest.mark.parametrize('args, argument_name, minimum, maximum, default_value, expected_error_message',
-                         [({'limit': 5}, 'limit', 6, None, None, 'limit should be equal or higher than 6'),
-                          ({'limit': 5}, 'limit', None, 4, None, 'limit should be equal or less than 4'),
-                          ({}, 'limit', 3, 4, 5, 'limit should be equal or less than 4')
-                          ])
-def test_get_and_validate_int_argument_invalid_arguments(args, argument_name, minimum, maximum, default_value,
-                                                         expected_error_message):
+def test_get_and_validate_int_argument_invalid_arguments():
     """
     Given:
      - Demisto arguments.
@@ -60,5 +54,5 @@ def test_get_and_validate_int_argument_invalid_arguments(args, argument_name, mi
     Then:
      - Ensure that DemistoException is thrown with error message which indicates that value is below minimum.
     """
-    with pytest.raises(DemistoException, match='limit should be equal or higher than 2'):
-        get_and_validate_int_argument({'limit': 3}, 'limit', 2)
+    with pytest.raises(DemistoException, match='limit should be equal or higher than 4'):
+        get_and_validate_int_argument({'limit': 3}, 'limit', 4)
