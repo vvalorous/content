@@ -12,13 +12,9 @@ BASE_URL = 'https://www.phishportal.com/v1/'
 
 
 class Client(BaseClient):
-    URL_ENCODED_HEADER = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    JSON_CONTENT_HEADER = {
-        'Content-Type': 'application/json'
-    }
+    URL_ENCODED_HEADER = {'Content-Type': 'application/x-www-form-urlencoded'}
+    JSON_CONTENT_HEADER = {'Content-Type': 'application/json'}
+    MULTIPART_DATA_HEADER = {'Content-Type: multipart/form-data'}
 
     def __init__(self, api_key: str, base_url: str, verify: bool, proxy: bool):
         super().__init__(base_url=base_url, verify=verify, proxy=proxy)
@@ -161,6 +157,14 @@ class Client(BaseClient):
             url_suffix=f'incident/{incident_id}/urls/add',
             data=urls,
             headers={**self.base_headers, **self.URL_ENCODED_HEADER}
+        )
+
+    def fraud_watch_attachment_upload_command(self, incident_id: str, attachment: Any):
+        return self._http_request(
+            method='POST',
+            url_suffix=f'incident/{incident_id}/upload',
+            data=attachment,
+            headers={**self.base_headers, **self.MULTIPART_DATA_HEADER}
         )
 
     def fraud_watch_brands_list(self, page: Optional[int], limit: Optional[int]):
@@ -598,6 +602,47 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     )
 
 
+def fraud_watch_attachment_upload_command(client: Client, args: Dict):
+    """
+    Adds a new file attachment to the incident which corresponds to the given incident ID.
+    - Incident ID (Required): The ID of the incident to add additional urls to.
+    - File Attachment: Entry id of the attachment to be added to the incident which corresponds to Incident ID.
+
+    Known possible errors that could cause error to be returned by FraudWatch service:
+    - Unknown incident id. # TODO CHECK ON FILE ERROR TOO
+
+    Args:
+        client (Client): FraudWatch client to perform the API calls.
+        args (Dict): Demisto arguments.
+
+    Returns:
+        CommandResults.
+    """
+    incident_id = args.get('incident_id', 'Incident ID was not given')
+    entry_id = args.get('attachment')
+
+    try:
+        # entry id of uploaded file to war room
+        file_info = demisto.getFilePath(entry_id)
+        with open(file_info['path'], 'rb') as uploaded_file:
+            raw_response = client.fraud_watch_attachment_upload_command(incident_id, uploaded_file)
+
+            if 'Updated sucessfully' not in raw_response:
+                raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
+
+            return CommandResults(
+                raw_response=raw_response,
+                readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
+                                f'{incident_id}'
+            )
+    except DemistoException as e:
+        if 'Not Found' in str(e):
+            raise DemistoException(f'Error occurred. Make sure incident id {incident_id} is correct')
+        raise e
+    except Exception:
+        raise DemistoException(F"Entry {entry_id} does not contain a file.")
+
+
 def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResults:
     """
     Gets a list of brands from FraudWatch service:
@@ -647,7 +692,7 @@ def main() -> None:
         'fraudwatch-incident-contact-emails-list': fraud_watch_incident_contact_emails_list_command,
         'fraudwatch-incident-messages-add': fraud_watch_incident_messages_add_command,
         'fraudwatch-incident-urls-add': fraud_watch_incident_urls_add_command,
-        # TODO fraudwatch-incident-attachment-upload
+        'fraudwatch-incident-attachment-upload': fraud_watch_attachment_upload_command,
         'fraudwatch-brands-list': fraud_watch_brands_list_command
     }
 

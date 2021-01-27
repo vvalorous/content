@@ -3,14 +3,9 @@ commonfields:
   id: FraudWatch
   version: -1
 configuration:
-- defaultvalue: https://example.com/
-  display: Your server URL
-  name: url
-  required: true
-  type: 0
-- display: API Key
-  additionalinfo: The API Key to use for connection
-  name: apikey
+- additionalinfo: The API Key to use for connection
+  display: API Key
+  name: api_key
   required: true
   type: 4
 - display: Trust any certificate (not secure)
@@ -28,28 +23,163 @@ name: FraudWatch
 script:
   commands:
   - arguments:
-    - default: false
-      description: '[Enter a description of the argument, including any important
-        information users need to know, for example, default values.]'
-      isArray: false
-      name: dummy
+    - description: Retrieve incidents which corresponds to the given brand. Returns
+        error if brand does not exist.
+      name: brand
+    - auto: PREDEFINED
+      description: Retrieve incidents which corresponds to the given status.
+      name: status
+      predefined:
+      - active
+      - new
+      - monitor
+      - reactive
+      - onhold
+      - closed
+      - closedmonitor
+      - rejected
+      - duplicate
+    - description: Total number of Incidents in a page. The default limit is 20 and
+        the maximum number is 200.
+      name: limit
+    - description: Retrieve incidents by the given page number.
+      name: page
+    - description: Retrieve only alerts that their date opened is higher than 'from'
+        value. has format of yyyy-mm-dd. If 'to' argument is not given, and 'from'
+        was given, we set 'to' to current time.
+      name: from
+    - description: Retrieve only alerts that their date opened is lower than 'to'
+        value. has format of yyyy-mm-dd. If 'from' argument is not given, and 'to'
+        was given, 'from' default to 12 months before 'to' by FraudWatch service.
+      name: to
+    description: Get list of incidents from FraudWatch service.
+    name: fraudwatch-incidents-list
+  - arguments:
+    - description: The brand associated to the reported incident.
+      name: brand
       required: true
-      secret: false
-    deprecated: false
-    description: '[Enter a description of the command, including any important information
-      users need to know, for example required permissions.]'
-    execution: false
-    name: baseintegration-dummy
-    outputs:
-    - contextPath: BaseIntegration.Output
-      description: '[Enter a description of the data returned in this output.]'
-      type: String
-  isfetch: false
+    - auto: PREDEFINED
+      description: The type of the incident to be associated to the reported incident.
+      name: type
+      predefined:
+      - phishing
+      - vishing
+      - brand_abuse
+      - malware
+      - social_media_brand_abuse
+      - mobile_app_unauthorized
+      - pac_file
+      - pharming
+      - messaging
+      - dmarc_email_server
+      required: true
+    - description: Reference ID to be associated to the reported incident. Should
+        be unique. Reference ID can be used later to retrieve specific incident by
+        its reference id.
+      name: reference_id
+    - description: Primary URL of the reported incident.
+      name: primary_url
+      required: true
+    - description: Comma seperated list. Additional urls in addition to 'primary_url'
+        to be added to the reported incident.
+      isArray: true
+      name: urls
+    - description: Evidence to be added (such as logs, etc...) to the reported incident.
+      name: evidence
+    - description: Additional instructions to be added for FraudWatch Security Team.
+      name: instructions
+    description: Report an incident to FraudWatch service
+    name: fraudwatch-incident-report
+  - arguments:
+    - description: The ID of the incident to be updated.
+      name: incident_id
+      required: true
+    - description: Updates this to be the brand associated to the incident which corresponds
+        to given incident id.
+      name: brand
+    - description: If given, reference id to be associated to the incident that corresponds
+        to given incident id. Should be unique. Reference ID can be used later to
+        retrieve specific incident by its reference id.
+      name: reference_id
+    - description: Add Additional instructions to be added for FraudWatch Security
+        Team to the incident which corresponds to given incident id.
+      name: instructions
+    description: Updates the incident ID corresponding to the given incident_id with
+      given arguments values
+    name: fraudwatch-incident-update
+  - arguments:
+    - description: The ID of the incident to be retrieved.
+      name: incident_id
+    - description: Reference id of the incident to be retrieved. In case more than
+        one incident has the corresponding reference id, FraudWatch service returns
+        the incident with the latest date opened.
+      name: reference_id
+    description: Gets an incident from FraudWatch service by its reference ID or incident
+      ID. Exactly one argument of 'reference_id' and 'incident_id' should be given.
+    name: fraudwatch-incident-get-by-identifier
+  - arguments:
+    - description: The ID of the incident to have its forensic data retrieved.
+      name: incident_id
+      required: true
+    description: Gets forensic data of an incident which corresponds to the given
+      incident ID.
+    name: fraudwatch-incident-forensic-get
+  - arguments:
+    - description: The ID of the incident to have its email contacts data retrieved.
+      name: incident_id
+      required: true
+    - description: Total number of contact emails in a page. The default limit is
+        20 and the maximum number is 200.
+      name: limit
+    - description: Retrieve contact emails by the given page number.
+      name: page
+    description: Provides contact emails for the incident which corresponds to the
+      given incident ID.
+    name: fraudwatch-incident-contact-emails-list
+  - arguments:
+    - description: The ID of the incident to add a message to its email contacts.
+      name: incident_id
+      required: true
+    - description: Content of the message.
+      name: message_content
+      required: true
+    description: Add a new message to be associated to the incident which corresponds
+      to the given incident ID
+    name: fraudwatch-incident-messages-add
+  - arguments:
+    - description: The ID of the incident to add additional urls to.
+      name: incident_id
+      required: true
+    - description: Comma separated list. Additional urls to be added to the incident
+        which corresponds to 'incident_id'.
+      name: urls
+      required: true
+    description: Adds additional urls to the incident which corresponds to the given
+      incident ID. Fails if one of the urls given already exists.
+    name: fraudwatch-incident-urls-add
+  - arguments:
+    - description: The ID of the incident to add a file attachment to.
+      name: incident_id
+      required: true
+    - description: Entry id of the attachment to be added to the incident.
+      name: attachment
+      required: true
+    description: Adds a new file attachment to the incident which corresponds to the
+      given incident ID.
+    name: fraudwatch-incident-attachment-upload
+  - arguments:
+    - description: Total number of brands in a page. The default limit is 20 and the
+        maximum number is 100.
+      name: limit
+    - description: Retrieve brands by the given page number.
+      name: page
+    description: Gets a list of brands from FraudWatch service
+    name: fraudwatch-brands-list
+  dockerimage: demisto/python3:3.9.1.15759
   runonce: false
-  script: '-'
-  type: python
+  script: ''
   subtype: python3
-  dockerimage: demisto/python3:3.8.6.14516
+  type: python
 fromversion: 5.0.0
 tests:
 - No tests (auto formatted)
