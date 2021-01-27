@@ -472,7 +472,8 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     outputs['identifier'] = incident_id
 
     if remove_empty_elements(raw_response):
-        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", outputs, removeNull=True)
+        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", remove_empty_elements(outputs),
+                                         removeNull=True)
     else:
         human_readable = f'### Incident id {incident_id} has empty forensic data'
 
@@ -521,7 +522,8 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
         outputs=raw_response,
         outputs_key_field='noteId',
         raw_response=raw_response,
-        readable_output=tableToMarkdown("FraudWatch Incident Contacts Data", raw_response, removeNull=True)
+        readable_output=tableToMarkdown("FraudWatch Incident Contacts Data", raw_response,
+                                        ['noteId', 'subject', 'creator', 'content', 'date'], removeNull=True)
     )
 
 
@@ -557,7 +559,7 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     if 'Message add sucessfully' not in raw_response:
         raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
-    human_readable = f'### Message for incident id {incident_id} with content {message_content} was added successfully.'
+    human_readable = f'### Message for incident id {incident_id} was added successfully.'
 
     return CommandResults(
         raw_response=raw_response,
