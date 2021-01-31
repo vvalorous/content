@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from dateutil import parser as dp
-
+import pytz
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 from CommonServerUserPython import *  # noqa
 
@@ -17,6 +17,8 @@ INCIDENT_LIST_MARKDOWN_HEADERS = ['identifier', 'reference_id', 'url', 'status',
                                   'content_ip', 'host', 'host_country', 'host_timezone', 'created_by', 'discovered_by',
                                   'current_duration', 'active_duration', 'date_opened', 'date_closed',
                                   'additional_urls', 'link']
+
+UTC_TIMEZONE = pytz.timezone('utc')
 ''' CLIENT CLASS '''
 
 
@@ -26,13 +28,27 @@ class Client(BaseClient):
     MULTIPART_DATA_HEADER = {'Content-Type': 'multipart/form-data'}
 
     def __init__(self, api_key: str, base_url: str, verify: bool, proxy: bool):
-        super().__init__(base_url=base_url, verify=verify, proxy=proxy)
         self.api_key = api_key
         bearer_token = self.get_bearer_token()
         self.base_headers = {
             'Authorization': f'Bearer {bearer_token}',
             'Accept': 'application/json'
         }
+        super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
+
+    def http_request(self, method, url_suffix, params=None, headers=None, data=None):
+        try:
+            return self._http_request(
+                method=method,
+                url_suffix=url_suffix,
+                params=params,
+                data=data,
+                headers=headers
+            )
+        except DemistoException as e:
+            if 'Not Found' in str(e):
+                raise DemistoException(f'Error occurred. Make sure arguments are correct')
+            raise e
 
     def get_bearer_token(self):
         """
@@ -48,13 +64,9 @@ class Client(BaseClient):
                 # Bearer Token is still valid - did not expire yet
                 return bearer_token
 
-        response = self.refresh_token_request(bearer_token)
+        response = self.http_request(method='POST', url_suffix='token/refresh')
         bearer_token = response.get('token')
         expiration_time = response.get('expiry')
-
-        if not bearer_token or not expiration_time:
-            raise DemistoException(
-                f'Unexpected response returned by FraudWatch when trying to refresh token: {response}')
 
         new_integration_context = {
             'bearer_token': bearer_token,
@@ -66,13 +78,6 @@ class Client(BaseClient):
         demisto.setIntegrationContext(new_integration_context)
 
         return bearer_token
-
-    def refresh_token_request(self, bearer_token: str):
-        return self._http_request(
-            method='POST',
-            url_suffix='token/refresh',
-            headers={'Authorization': f'Bearer {bearer_token}'}
-        )
 
     def fraud_watch_incidents_list(self, brand: Optional[str], status: Optional[str], page: Optional[int],
                                    limit: Optional[int], from_date: Optional[str], to_date: Optional[str]):
@@ -89,24 +94,22 @@ class Client(BaseClient):
         if to_date:
             params['to'] = to_date
 
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix='incidents',
-            params=params,
-            headers=self.base_headers
+            params=params
         )
 
     def fraud_watch_incident_list_by_id(self, incident_id: str):
-        return self._http_request(
+        return self.http_request(
             method='GET',
-            url_suffix=f'incident/{incident_id}',
-            headers=self.base_headers
+            url_suffix=f'incident/{incident_id}'
         )
 
     def fraud_watch_incident_report(self, brand: str, incident_type: Optional[str], reference_id: Optional[str],
                                     primary_url: str, urls: Optional[List[str]], evidence: Optional[str],
                                     instructions: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix='incidents',
             data=assign_params(
@@ -123,7 +126,7 @@ class Client(BaseClient):
 
     def fraud_watch_incident_update(self, incident_id: str, brand: Optional[str], reference_id: Optional[str],
                                     instructions: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='PUT',
             url_suffix=f'incident/{incident_id}',
             data=assign_params(
@@ -135,32 +138,29 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_get_by_reference(self, reference_id: str):
-        return self._http_request(
+        return self.http_request(
             method='GET',
-            url_suffix=f'incident/reference/{reference_id}',
-            headers=self.base_headers
+            url_suffix=f'incident/reference/{reference_id}'
         )
 
     def fraud_watch_incident_forensic_get(self, incident_id: str):
-        return self._http_request(
+        return self.http_request(
             method='GET',
-            url_suffix=f'incident/{incident_id}/forensic',
-            headers=self.base_headers
+            url_suffix=f'incident/{incident_id}/forensic'
         )
 
     def fraud_watch_incident_contact_emails_list(self, incident_id: str, page: Optional[int], limit: Optional[int]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/message',
             params=assign_params(
                 page=page,
                 limit=limit
-            ),
-            headers=self.base_headers
+            )
         )
 
     def fraud_watch_incident_messages_add(self, incident_id: str, message_content: Dict):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/message/add',
             data=message_content,
@@ -168,7 +168,7 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_urls_add(self, incident_id: str, urls: Dict[str, List[str]]):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/urls/add',
             data=urls,
@@ -176,7 +176,7 @@ class Client(BaseClient):
         )
 
     def fraud_watch_attachment_upload_command(self, incident_id: str, attachment: Any):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/upload',
             data=attachment,
@@ -184,14 +184,13 @@ class Client(BaseClient):
         )
 
     def fraud_watch_brands_list(self, page: Optional[int], limit: Optional[int]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix='account/brands',
             params=assign_params(
                 page=page,
                 limit=limit
-            ),
-            headers=self.base_headers
+            )
         )
 
 
@@ -224,6 +223,26 @@ def get_and_validate_int_argument(args: Dict, argument_name: str, minimum: int) 
     return argument_value
 
 
+def get_time_parameter(arg: Optional[str]):
+    """
+    Returns date time object with aware time zone if 'arg' exists.
+    If no time zone is given, sets timezone to UTC.
+    Args:
+        arg (str): The argument to turn into aware date time.
+
+    Returns:
+        - If 'arg' is None, returns None.
+        - If 'arg' is exists returns date time.
+    """
+    maybe_unaware_date = arg_to_datetime(arg, is_utc=True)
+    if not maybe_unaware_date:
+        return None
+
+    aware_time_date = maybe_unaware_date if maybe_unaware_date.tzinfo else UTC_TIMEZONE.localize(
+        maybe_unaware_date)
+    return aware_time_date
+
+
 ''' COMMAND FUNCTIONS '''
 
 
@@ -241,42 +260,43 @@ def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
     brand = params.get('brand')
     status = params.get('status')
 
-    current_time = datetime.now(timezone.utc)
-
     fetch_time_string = params.get('fetch_time', '5 days').strip()
-    first_fetch_time = dp.parse(fetch_time_string).astimezone(timezone.utc)  # TODO assure transformed to utc
-    last_fetch_date_time = last_run.get('last_fetch_date_time', first_fetch_time)
-    from_date = last_fetch_date_time.strftime(FRAUD_WATCH_DATE_FORMAT)
-    to_date = current_time.strftime(FRAUD_WATCH_DATE_FORMAT)
+    first_fetch_time = get_time_parameter(fetch_time_string)
+    from_date = last_run.get('last_fetch_day', first_fetch_time.strftime(FRAUD_WATCH_DATE_FORMAT))
+    last_fetch_time = last_run.get('last_fetch_date_time', first_fetch_time)
 
     raw_response = client.fraud_watch_incidents_list(brand=brand, status=status, page=None, limit=None,
-                                                     from_date=from_date, to_date=to_date)
+                                                     from_date=from_date, to_date=None)
 
     if raw_response.get('error'):
         raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
+
     incidents = raw_response.get('incidents')
-    if incidents is None:
-        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
     incidents_obj_list: List[Dict[str, Any]] = []
-    current_run_max_date_time = None
+
     for incident in incidents:
         try:
-            incident_date_opened = dp.parse(incident.get('date_opened'))
-            if incident_date_opened < last_fetch_date_time:
+            incident_date_opened = get_time_parameter(incident.get('date_opened'))
+            if incident_date_opened < last_fetch_time:
                 continue
         except Exception as e:
-    #         current_run_max_epoch_time = max(current_run_max_epoch_time, last_occurrence_time)
-    #         incident = {
-    #             'name': 'Nutanix Hypervisor Alert',
-    #             'type': 'Nutanix Hypervisor Alert',
-    #             'occurred': occurred,
-    #             'rawJSON': json.dumps(remove_empty_elements(alert))
-    #         }
-    #
-    #         incidents.append(incident)
+            raise e
 
-    # return incidents, {'last_fetch_epoch_time': max(current_run_max_epoch_time, last_fetch_epoch_time)}
+        incident = {
+            'name': 'TODO',
+            'type': 'FraudWatch Incident',
+            'occurred': incident.get('date_opened'),
+            'rawJSON': json.dumps(incident)
+        }
+
+        incidents_obj_list.append(incident)
+
+    current_time = datetime.now(timezone.utc)
+    return incidents_obj_list, {
+        'last_fetch_day': current_time.strftime(FRAUD_WATCH_DATE_FORMAT),
+        'last_fetch_date_time': current_time
+    }
 
 
 def test_module(client: Client) -> str:
@@ -338,8 +358,6 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     if raw_response.get('error'):
         raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
     outputs = raw_response.get('incidents')
-    if outputs is None:
-        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
     return CommandResults(
         outputs_prefix='FraudWatch.Incident',
@@ -435,18 +453,10 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     reference_id = args.get('reference_id')
     instructions = args.get('instructions')
 
-    if not brand and not reference_id and not instructions:
+    if all(argument is None for argument in [brand, reference_id, instructions]):
         raise DemistoException(f'No data was given to update for incident id: ({incident_id})')
 
-    try:
-        raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
-    except DemistoException as e:
-        if 'Not Found' in str(e):
-            raise DemistoException(f'Page not found. Make sure incident id: ({incident_id}) is correct')
-        raise e
-
-    if 'Updated sucessfully' not in raw_response:
-        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
+    raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
 
     return CommandResults(
         raw_response=raw_response,
@@ -482,19 +492,9 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
         raise DemistoException('Exactly one of reference id or incident id must be given.')
 
     if incident_id:
-        try:
-            raw_response = client.fraud_watch_incident_list_by_id(incident_id)
-        except DemistoException as e:
-            if 'Not Found' in str(e):
-                raise DemistoException(f'Page not found. Make sure incident id: ({incident_id}) is correct')
-            raise e
+        raw_response = client.fraud_watch_incident_list_by_id(incident_id)
     else:
-        try:
-            raw_response = client.fraud_watch_incident_get_by_reference(reference_id)
-        except DemistoException as e:
-            if 'Not Found' in str(e):
-                raise DemistoException(f'Page not found. Make sure reference id {reference_id} is correct')
-            raise e
+        raw_response = client.fraud_watch_incident_get_by_reference(reference_id)
 
     return CommandResults(
         outputs_prefix='FraudWatch.Incident',
@@ -522,12 +522,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     """
     incident_id = args.get('incident_id', 'Incident ID is missing')
 
-    try:
-        raw_response = client.fraud_watch_incident_forensic_get(incident_id)
-    except DemistoException as e:
-        if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
-        raise e
+    raw_response = client.fraud_watch_incident_forensic_get(incident_id)
 
     outputs = deepcopy(raw_response)
     outputs['identifier'] = incident_id
@@ -572,7 +567,7 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
     try:
         raw_response = client.fraud_watch_incident_contact_emails_list(incident_id, page, limit)
     except DemistoException as e:
-        if 'Not Found' in str(e):
+        if 'Error occurred. Make sure arguments are correct' in str(e):
             page_error_msg = f'''Make sure page index: ({page}) is within bounds.''' if page else ''
             unknown_incident_msg = f'''Make sure incident id: ({incident_id}) is correct.'''
             raise DemistoException(f'''Error occurred. {page_error_msg} {unknown_incident_msg}''')
@@ -610,15 +605,7 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     if not message_content:
         raise DemistoException('Message content cannot be empty.')
 
-    try:
-        raw_response = client.fraud_watch_incident_messages_add(incident_id, message_content)
-    except DemistoException as e:
-        if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
-        raise e
-
-    if 'Message add sucessfully' not in raw_response:
-        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
+    raw_response = client.fraud_watch_incident_messages_add(incident_id, message_content)
 
     human_readable = f'### Message for incident id {incident_id} was added successfully.'
 
@@ -656,12 +643,7 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     for raw_url in raw_urls:
         urls['urls[]'].append(raw_url)
 
-    try:
-        raw_response = client.fraud_watch_incident_urls_add(incident_id, urls)
-    except DemistoException as e:
-        if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
-        raise e
+    raw_response = client.fraud_watch_incident_urls_add(incident_id, urls)
 
     return CommandResults(
         outputs_prefix='FraudWatch.IncidentUrls',
@@ -696,18 +678,11 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
         with open(file_info['path'], 'rb') as uploaded_file:
             raw_response = client.fraud_watch_attachment_upload_command(incident_id, uploaded_file)
 
-            if 'Updated sucessfully' not in raw_response:
-                raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
-
             return CommandResults(
                 raw_response=raw_response,
                 readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
                                 f'{incident_id}'
             )
-    except DemistoException as e:
-        if 'Not Found' in str(e):
-            raise DemistoException(f'Error occurred. Make sure incident id: ({incident_id}) is correct')
-        raise e
     except Exception:
         raise DemistoException(F"Entry {entry_id} does not contain a file.")
 
@@ -730,8 +705,6 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
     raw_response = client.fraud_watch_brands_list(page, limit)
 
     outputs = raw_response.get('brands')
-    if outputs is None:
-        raise DemistoException(f'Unexpected response returned by FraudWatch: {raw_response}')
 
     return CommandResults(
         outputs_prefix='FraudWatch.Brand',
@@ -751,19 +724,7 @@ def main() -> None:
     """
     command = demisto.command()
     params = demisto.params()
-
-    commands = {
-        'fraudwatch-incidents-list': fraud_watch_incidents_list_command,
-        'fraudwatch-incident-report': fraud_watch_incident_report_command,
-        'fraudwatch-incident-update': fraud_watch_incident_update_command,
-        'fraudwatch-incident-get-by-identifier': fraud_watch_incident_get_by_identifier_command,
-        'fraudwatch-incident-forensic-get': fraud_watch_incident_forensic_get_command,
-        'fraudwatch-incident-contact-emails-list': fraud_watch_incident_contact_emails_list_command,
-        'fraudwatch-incident-messages-add': fraud_watch_incident_messages_add_command,
-        'fraudwatch-incident-urls-add': fraud_watch_incident_urls_add_command,
-        'fraudwatch-incident-attachment-upload': fraud_watch_attachment_upload_command,
-        'fraudwatch-brands-list': fraud_watch_brands_list_command
-    }
+    args = demisto.args()
 
     verify_certificate = not params.get('insecure', False)
     proxy = params.get('proxy', False)
@@ -788,8 +749,35 @@ def main() -> None:
             demisto.setLastRun(next_run)
             demisto.incidents(incidents)
 
-        elif command in commands:
-            return_results(commands[command](client, demisto.args()))
+        elif command == 'fraudwatch-incidents-list':
+            return_results(fraud_watch_incidents_list_command(client, args))
+
+        elif command == 'fraudwatch-incident-report':
+            return_results(fraud_watch_incident_report_command(client, args))
+
+        elif command == 'fraudwatch-incident-update':
+            return_results(fraud_watch_incident_update_command(client, args))
+
+        elif command == 'fraudwatch-incident-get-by-identifier':
+            return_results(fraud_watch_incident_get_by_identifier_command(client, args))
+
+        elif command == 'fraudwatch-incident-forensic-get':
+            return_results(fraud_watch_incident_forensic_get_command(client, args))
+
+        elif command == 'fraudwatch-incident-contact-emails-list':
+            return_results(fraud_watch_incident_contact_emails_list_command(client, args))
+
+        elif command == 'fraudwatch-incident-messages-add':
+            return_results(fraud_watch_incident_messages_add_command(client, args))
+
+        elif command == 'fraudwatch-incident-urls-add':
+            return_results(fraud_watch_incident_urls_add_command(client, args))
+
+        elif command == 'fraudwatch-incident-attachment-upload':
+            return_results(fraud_watch_attachment_upload_command(client, args))
+
+        elif command == 'fraudwatch-brands-list':
+            return_results(fraud_watch_brands_list_command(client, args))
 
         else:
             raise NotImplementedError(f'Command {command} is not implemented.')
