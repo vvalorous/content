@@ -807,4 +807,5 @@ def main() -> None:
 ''' ENTRY POINT '''
 
 if __name__ in ('__main__', '__builtin__', 'builtins'):
+    a = get_time_parameter('2020-11-22T16:31:14-02:00')
     main()

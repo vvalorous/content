@@ -3,11 +3,11 @@
 """
 import io
 import json
-
+import pytz
 import pytest
 
-from CommonServerPython import DemistoException
-from FraudWatch import get_and_validate_int_argument
+from CommonServerPython import DemistoException, datetime
+from FraudWatch import get_and_validate_int_argument, get_time_parameter
 
 
 def util_load_json(path):
@@ -56,3 +56,24 @@ def test_get_and_validate_int_argument_invalid_arguments():
     """
     with pytest.raises(DemistoException, match='limit should be equal or higher than 4'):
         get_and_validate_int_argument({'limit': 3}, 'limit', 4)
+
+
+@pytest.mark.parametrize('arg, expected',
+                         [('2020-11-22T16:31:14-02:00', datetime(2020, 11, 22, 18, 31, 14, tzinfo=pytz.utc)),
+                          (None, None),
+                          ])
+def test_get_optional_time_parameter_valid_time_argument(arg, expected):
+    """
+    Given:
+     - Demisto arguments.
+     - Argument of type time to extract from Demisto arguments as epoch time.
+
+    When:
+     - Case a: Argument exists, and has the expected date format.
+     - Case b: Argument does not exist.
+
+    Then:
+     - Case a: Ensure that the corresponding epoch time is returned.
+     - Case b: Ensure that None is returned.
+    """
+    assert (get_time_parameter(arg)) == expected
