@@ -672,6 +672,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
 
     Known possible errors that could cause error to be returned by FraudWatch service:
     - Unknown incident id. # TODO CHECK ON FILE ERROR TOO
+    # TODO add context path
 
     Args:
         client (Client): FraudWatch client to perform the API calls.
@@ -716,6 +717,10 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
     raw_response = client.fraud_watch_brands_list(page, limit)
 
     outputs = raw_response.get('brands')
+
+    import json
+    with open('brands.json', 'w') as fp:
+        json.dump(outputs, fp)
 
     return CommandResults(
         outputs_prefix='FraudWatch.Brand',
