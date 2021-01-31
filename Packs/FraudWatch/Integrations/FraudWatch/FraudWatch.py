@@ -29,14 +29,14 @@ class Client(BaseClient):
 
     def __init__(self, api_key: str, base_url: str, verify: bool, proxy: bool):
         self.api_key = api_key
-        bearer_token = self.get_bearer_token()
+        # bearer_token = self.get_bearer_token()
         self.base_headers = {
-            'Authorization': f'Bearer {bearer_token}',
+            'Authorization': f'Bearer {api_key}',
             'Accept': 'application/json'
         }
         super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
 
-    def http_request(self, method, url_suffix, params=None, headers=None, data=None):
+    def http_request(self, method: str, url_suffix: str, params: Dict = None, headers: Dict = None, data: Dict = None):
         try:
             return self._http_request(
                 method=method,
@@ -47,7 +47,7 @@ class Client(BaseClient):
             )
         except DemistoException as e:
             if 'Not Found' in str(e):
-                raise DemistoException(f'Error occurred. Make sure arguments are correct')
+                raise DemistoException('Error occurred. Make sure arguments are correct')
             raise e
 
     def get_bearer_token(self):
@@ -100,12 +100,6 @@ class Client(BaseClient):
             params=params
         )
 
-    def fraud_watch_incident_list_by_id(self, incident_id: str):
-        return self.http_request(
-            method='GET',
-            url_suffix=f'incident/{incident_id}'
-        )
-
     def fraud_watch_incident_report(self, brand: str, incident_type: Optional[str], reference_id: Optional[str],
                                     primary_url: str, urls: Optional[List[str]], evidence: Optional[str],
                                     instructions: Optional[str]):
@@ -137,7 +131,13 @@ class Client(BaseClient):
             headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
-    def fraud_watch_incident_get_by_reference(self, reference_id: str):
+    def fraud_watch_incident_list_by_id(self, incident_id: Optional[str]):
+        return self.http_request(
+            method='GET',
+            url_suffix=f'incident/{incident_id}'
+        )
+
+    def fraud_watch_incident_get_by_reference(self, reference_id: Optional[str]):
         return self.http_request(
             method='GET',
             url_suffix=f'incident/reference/{reference_id}'
@@ -159,7 +159,7 @@ class Client(BaseClient):
             )
         )
 
-    def fraud_watch_incident_messages_add(self, incident_id: str, message_content: Dict):
+    def fraud_watch_incident_messages_add(self, incident_id: Optional[str], message_content: Any):
         return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/message/add',
@@ -167,7 +167,7 @@ class Client(BaseClient):
             headers={**self.base_headers, **self.JSON_CONTENT_HEADER}
         )
 
-    def fraud_watch_incident_urls_add(self, incident_id: str, urls: Dict[str, List[str]]):
+    def fraud_watch_incident_urls_add(self, incident_id: Optional[str], urls: Dict[str, List[str]]):
         return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/urls/add',
@@ -297,7 +297,8 @@ def fetch_incidents_command(client: Client, params: Dict):
             'name': f'''{incident.get('brand')}:{incident.get('identifier')}''',
             'type': 'FraudWatch Incident',
             'occurred': incident.get('date_opened'),
-            'rawJSON': json.dumps(incident)
+            'rawJSON': json.dumps(incident),
+            'severity': 'Informational'
         }
 
         incidents_obj_list.append(incident_obj)
@@ -497,8 +498,8 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', '')
-    reference_id = args.get('reference_id', '')
+    incident_id = args.get('incident_id')
+    reference_id = args.get('reference_id')
 
     if (incident_id and reference_id) or (not incident_id and not reference_id):
         raise DemistoException('Exactly one of reference id or incident id must be given.')
@@ -611,11 +612,8 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
     message_content = args.get('message_content')
-
-    if not message_content:
-        raise DemistoException('Message content cannot be empty.')
 
     raw_response = client.fraud_watch_incident_messages_add(incident_id, message_content)
 
@@ -643,11 +641,8 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
     raw_urls = argToList(args.get('urls'))
-
-    if not raw_urls:
-        raise DemistoException('''No url to be added have been given for 'fraudwatch-incident-urls-add' command''')
 
     urls: Dict[str, List[str]] = {
         'urls[]': []
@@ -674,6 +669,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     Known possible errors that could cause error to be returned by FraudWatch service:
     - Unknown incident id. # TODO CHECK ON FILE ERROR TOO
     # TODO add context path
+    # TODO ADD TESTS
 
     Args:
         client (Client): FraudWatch client to perform the API calls.
@@ -719,10 +715,6 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
 
     outputs = raw_response.get('brands')
 
-    import json
-    with open('brands.json', 'w') as fp:
-        json.dump(outputs, fp)
-
     return CommandResults(
         outputs_prefix='FraudWatch.Brand',
         outputs=outputs,
@@ -755,6 +747,9 @@ def main() -> None:
             base_url=BASE_URL,
             verify=verify_certificate,
             proxy=proxy)
+
+        result = test_module(client, params)
+        return_results(result)
 
         if command == 'test-module':
             result = test_module(client, params)
@@ -807,5 +802,4 @@ def main() -> None:
 ''' ENTRY POINT '''
 
 if __name__ in ('__main__', '__builtin__', 'builtins'):
-    a = get_time_parameter('2020-11-22T16:31:14-02:00')
     main()
