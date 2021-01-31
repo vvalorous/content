@@ -268,13 +268,14 @@ def fetch_incidents_command(client: Client, params: Dict):
     last_run = demisto.getLastRun()
     brand = params.get('brand')
     status = params.get('status')
+    limit = params.get('max_fetch')
 
-    fetch_time_string = params.get('fetch_time', '5 days').strip()
+    fetch_time_string = params.get('first_fetch', '5 days').strip()
     first_fetch_time = get_time_parameter(fetch_time_string)
     from_date = last_run.get('last_fetch_day', first_fetch_time.strftime(FRAUD_WATCH_DATE_FORMAT))
     last_fetch_time = last_run.get('last_fetch_date_time', first_fetch_time)
 
-    raw_response = client.fraud_watch_incidents_list(brand=brand, status=status, page=None, limit=None,
+    raw_response = client.fraud_watch_incidents_list(brand=brand, status=status, page=None, limit=limit,
                                                      from_date=from_date, to_date=None)
 
     if raw_response.get('error'):
