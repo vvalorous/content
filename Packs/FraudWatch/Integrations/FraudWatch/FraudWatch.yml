@@ -3,6 +3,10 @@ commonfields:
   id: FraudWatch
   version: -1
 configuration:
+- display: Fetch incidents
+  name: isFetch
+  required: false
+  type: 8
 - additionalinfo: The API Key to use for connection
   display: API Key
   name: api_key
@@ -16,7 +20,7 @@ configuration:
   name: proxy
   required: false
   type: 8
-description: '[Enter a comprehensive, yet concise, description of what the integration
+description: 'TODO [Enter a comprehensive, yet concise, description of what the integration
   does, what use cases it is designed for, etc.]'
 display: FraudWatch
 name: FraudWatch
@@ -55,63 +59,63 @@ script:
     description: Get list of incidents from FraudWatch service.
     name: fraudwatch-incidents-list
     outputs:
-      - contextPath: FraudWatch.Incident.identifier
-        description: Identifier of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.reference_id
-        description: Reference ID of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.url
-        description: Main URL associated to the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.status
-        description: Status of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.type
-        description: Type of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.brand
-        description: Brand of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.client
-        description: Client.
-        type: String
-      - contextPath: FraudWatch.Incident.content_ip
-        description: Content IP.
-        type: String
-      - contextPath: FraudWatch.Incident.host
-        description: The host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_country
-        description: The country of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_timezone
-        description: The timezone of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.created_by
-        description: Who created the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.discovered_by
-        description: Who discovered the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.current_duration
-        description: Current duration of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.active_duration
-        description: Current active duration of the incident.
-        type: Unknown
-      - contextPath: FraudWatch.Incident.date_opened
-        description: The date incident was opened.
-        type: Date
-      - contextPath: FraudWatch.Incident.date_closed
-        description: The date incident was closed.
-        type: Date
-      - contextPath: FraudWatch.Incident.additional_urls
-        description: Additional URLs associated to the incidents.
-        type: String
-      - contextPath: FraudWatch.Incident.link
-        description: Link to the incident page.
-        type: String
+    - contextPath: FraudWatch.Incident.identifier
+      description: Identifier of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.reference_id
+      description: Reference ID of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.url
+      description: Main URL associated to the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.status
+      description: Status of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.type
+      description: Type of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.brand
+      description: Brand of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.client
+      description: Client.
+      type: String
+    - contextPath: FraudWatch.Incident.content_ip
+      description: Content IP.
+      type: String
+    - contextPath: FraudWatch.Incident.host
+      description: The host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_country
+      description: The country of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_timezone
+      description: The timezone of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.created_by
+      description: Who created the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.discovered_by
+      description: Who discovered the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.current_duration
+      description: Current duration of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.active_duration
+      description: Current active duration of the incident.
+      type: Unknown
+    - contextPath: FraudWatch.Incident.date_opened
+      description: The date incident was opened.
+      type: Date
+    - contextPath: FraudWatch.Incident.date_closed
+      description: The date incident was closed.
+      type: Date
+    - contextPath: FraudWatch.Incident.additional_urls
+      description: Additional URLs associated to the incidents.
+      type: String
+    - contextPath: FraudWatch.Incident.link
+      description: Link to the incident page.
+      type: String
   - arguments:
     - description: The brand associated to the reported incident.
       name: brand
@@ -149,63 +153,63 @@ script:
     description: Report an incident to FraudWatch service
     name: fraudwatch-incident-report
     outputs:
-      - contextPath: FraudWatch.Incident.identifier
-        description: Identifier of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.reference_id
-        description: Reference ID of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.url
-        description: Main URL associated to the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.status
-        description: Status of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.type
-        description: Type of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.brand
-        description: Brand of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.client
-        description: Client.
-        type: String
-      - contextPath: FraudWatch.Incident.content_ip
-        description: Content IP.
-        type: String
-      - contextPath: FraudWatch.Incident.host
-        description: The host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_country
-        description: The country of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_timezone
-        description: The timezone of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.created_by
-        description: Who created the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.discovered_by
-        description: Who discovered the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.current_duration
-        description: Current duration of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.active_duration
-        description: Current active duration of the incident.
-        type: Unknown
-      - contextPath: FraudWatch.Incident.date_opened
-        description: The date incident was opened.
-        type: Date
-      - contextPath: FraudWatch.Incident.date_closed
-        description: The date incident was closed.
-        type: Date
-      - contextPath: FraudWatch.Incident.additional_urls
-        description: Additional URLs associated to the incidents.
-        type: String
-      - contextPath: FraudWatch.Incident.link
-        description: Link to the incident page.
-        type: String
+    - contextPath: FraudWatch.Incident.identifier
+      description: Identifier of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.reference_id
+      description: Reference ID of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.url
+      description: Main URL associated to the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.status
+      description: Status of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.type
+      description: Type of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.brand
+      description: Brand of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.client
+      description: Client.
+      type: String
+    - contextPath: FraudWatch.Incident.content_ip
+      description: Content IP.
+      type: String
+    - contextPath: FraudWatch.Incident.host
+      description: The host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_country
+      description: The country of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_timezone
+      description: The timezone of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.created_by
+      description: Who created the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.discovered_by
+      description: Who discovered the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.current_duration
+      description: Current duration of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.active_duration
+      description: Current active duration of the incident.
+      type: Unknown
+    - contextPath: FraudWatch.Incident.date_opened
+      description: The date incident was opened.
+      type: Date
+    - contextPath: FraudWatch.Incident.date_closed
+      description: The date incident was closed.
+      type: Date
+    - contextPath: FraudWatch.Incident.additional_urls
+      description: Additional URLs associated to the incidents.
+      type: String
+    - contextPath: FraudWatch.Incident.link
+      description: Link to the incident page.
+      type: String
   - arguments:
     - description: The ID of the incident to be updated.
       name: incident_id
@@ -234,63 +238,63 @@ script:
       ID. Exactly one argument of 'reference_id' and 'incident_id' should be given.
     name: fraudwatch-incident-get-by-identifier
     outputs:
-      - contextPath: FraudWatch.Incident.identifier
-        description: Identifier of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.reference_id
-        description: Reference ID of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.url
-        description: Main URL associated to the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.status
-        description: Status of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.type
-        description: Type of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.brand
-        description: Brand of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.client
-        description: Client.
-        type: String
-      - contextPath: FraudWatch.Incident.content_ip
-        description: Content IP.
-        type: String
-      - contextPath: FraudWatch.Incident.host
-        description: The host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_country
-        description: The country of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.host_timezone
-        description: The timezone of the host.
-        type: String
-      - contextPath: FraudWatch.Incident.created_by
-        description: Who created the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.discovered_by
-        description: Who discovered the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.current_duration
-        description: Current duration of the incident.
-        type: String
-      - contextPath: FraudWatch.Incident.active_duration
-        description: Current active duration of the incident.
-        type: Unknown
-      - contextPath: FraudWatch.Incident.date_opened
-        description: The date incident was opened.
-        type: Date
-      - contextPath: FraudWatch.Incident.date_closed
-        description: The date incident was closed.
-        type: Date
-      - contextPath: FraudWatch.Incident.additional_urls
-        description: Additional URLs associated to the incidents.
-        type: String
-      - contextPath: FraudWatch.Incident.link
-        description: Link to the incident page.
-        type: String
+    - contextPath: FraudWatch.Incident.identifier
+      description: Identifier of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.reference_id
+      description: Reference ID of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.url
+      description: Main URL associated to the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.status
+      description: Status of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.type
+      description: Type of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.brand
+      description: Brand of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.client
+      description: Client.
+      type: String
+    - contextPath: FraudWatch.Incident.content_ip
+      description: Content IP.
+      type: String
+    - contextPath: FraudWatch.Incident.host
+      description: The host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_country
+      description: The country of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.host_timezone
+      description: The timezone of the host.
+      type: String
+    - contextPath: FraudWatch.Incident.created_by
+      description: Who created the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.discovered_by
+      description: Who discovered the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.current_duration
+      description: Current duration of the incident.
+      type: String
+    - contextPath: FraudWatch.Incident.active_duration
+      description: Current active duration of the incident.
+      type: Unknown
+    - contextPath: FraudWatch.Incident.date_opened
+      description: The date incident was opened.
+      type: Date
+    - contextPath: FraudWatch.Incident.date_closed
+      description: The date incident was closed.
+      type: Date
+    - contextPath: FraudWatch.Incident.additional_urls
+      description: Additional URLs associated to the incidents.
+      type: String
+    - contextPath: FraudWatch.Incident.link
+      description: Link to the incident page.
+      type: String
   - arguments:
     - description: The ID of the incident to have its forensic data retrieved.
       name: incident_id
@@ -299,27 +303,27 @@ script:
       incident ID.
     name: fraudwatch-incident-forensic-get
     outputs:
-      - contextPath: FraudWatch.IncidentForensicData.host_provider.name
-        description: Name of the host provider.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.host_provider.country
-        description: Country of the host provider.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.host_nameservers
-        description: Name of the host servers.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.name
-        description: Host domain registrar name.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.email
-        description: Host domain registrar email.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.country
-        description: Host domain registrar country.
-        type: String
-      - contextPath: FraudWatch.IncidentForensicData.identifier
-        description: Identifier of the incident.
-        type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_provider.name
+      description: Name of the host provider.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_provider.country
+      description: Country of the host provider.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_nameservers
+      description: Name of the host servers.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.name
+      description: Host domain registrar name.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.email
+      description: Host domain registrar email.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.country
+      description: Host domain registrar country.
+      type: String
+    - contextPath: FraudWatch.IncidentForensicData.identifier
+      description: Identifier of the incident.
+      type: String
   - arguments:
     - description: The ID of the incident to have its email contacts data retrieved.
       name: incident_id
@@ -333,21 +337,21 @@ script:
       given incident ID.
     name: fraudwatch-incident-contact-emails-list
     outputs:
-      - contextPath: FraudWatch.IncidentContacts.noteId
-        description: Note ID of the email.
-        type: String
-      - contextPath: FraudWatch.IncidentContacts.subject
-        description: Subject of the email.
-        type: String
-      - contextPath: FraudWatch.IncidentContacts.creator
-        description: The creator of the email.
-        type: String
-      - contextPath: FraudWatch.IncidentContacts.content
-        description: The content of the email.
-        type: String
-      - contextPath: FraudWatch.IncidentContacts.date
-        description: The date of the email.
-        type: Date
+    - contextPath: FraudWatch.IncidentContacts.noteId
+      description: Note ID of the email.
+      type: String
+    - contextPath: FraudWatch.IncidentContacts.subject
+      description: Subject of the email.
+      type: String
+    - contextPath: FraudWatch.IncidentContacts.creator
+      description: The creator of the email.
+      type: String
+    - contextPath: FraudWatch.IncidentContacts.content
+      description: The content of the email.
+      type: String
+    - contextPath: FraudWatch.IncidentContacts.date
+      description: The date of the email.
+      type: Date
   - arguments:
     - description: The ID of the incident to add a message to its email contacts.
       name: incident_id
@@ -370,12 +374,12 @@ script:
       incident ID. Fails if one of the urls given already exists.
     name: fraudwatch-incident-urls-add
     outputs:
-      - contextPath: FraudWatch.IncidentUrls.success
-        description: Whether the URLs were added successfully.
-        type: String
-      - contextPath: FraudWatch.IncidentUrls.new_urls
-        description: The new URLs that have been added.
-        type: String
+    - contextPath: FraudWatch.IncidentUrls.success
+      description: Whether the URLs were added successfully.
+      type: String
+    - contextPath: FraudWatch.IncidentUrls.new_urls
+      description: The new URLs that have been added.
+      type: String
   - arguments:
     - description: The ID of the incident to add a file attachment to.
       name: incident_id
@@ -395,24 +399,24 @@ script:
     description: Gets a list of brands from FraudWatch service
     name: fraudwatch-brands-list
     outputs:
-      - contextPath: FraudWatch.Brand.client
-        description: The client.
-        type: String
-      - contextPath: FraudWatch.Brand.alternate business name
-        description: Alternative business name.
-        type: String
-      - contextPath: FraudWatch.Brand.name
-        description: The name of the brand.
-        type: String
-      - contextPath: FraudWatch.Brand.active
-        description: Wether brand is active or not.
-        type: Boolean
-      - contextPath: FraudWatch.Brand.services.name
-        description: The name of the service.
-        type: String
-      - contextPath: FraudWatch.Brand.services.action
-        description: The action of the service.
-        type: String
+    - contextPath: FraudWatch.Brand.client
+      description: The client.
+      type: String
+    - contextPath: FraudWatch.Brand.alternate business name
+      description: Alternative business name.
+      type: String
+    - contextPath: FraudWatch.Brand.name
+      description: The name of the brand.
+      type: String
+    - contextPath: FraudWatch.Brand.active
+      description: Wether brand is active or not.
+      type: Boolean
+    - contextPath: FraudWatch.Brand.services.name
+      description: The name of the service.
+      type: String
+    - contextPath: FraudWatch.Brand.services.action
+      description: The action of the service.
+      type: String
   dockerimage: demisto/python3:3.9.1.15759
   runonce: false
   script: ''
