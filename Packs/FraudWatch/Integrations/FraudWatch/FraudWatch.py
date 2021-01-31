@@ -246,17 +246,26 @@ def get_time_parameter(arg: Optional[str]):
 ''' COMMAND FUNCTIONS '''
 
 
-def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
+def fetch_incidents_command(client: Client, params: Dict):
     """
+    Retrieves new incidents from FraudWatch.
+    Uses Demisto last run parameters in the following way:
+    - 'last_fetch_day' - The latest day fetching was done. Used in 'from_date' to the API call
+       to fetch only incidents from the relevant day and forward, as any date before 'last_fetch_day'
+       have already been fetched or skipped intentionally and there is no need to fetch incidents
+       before 'last_fetch_day'.
+    - 'last_fetch_date_time' - The latest time fetching was done. Because FraudWatch API 'from_date' is accurate
+       per day, and fetching incidents usually happens more than once a day, this is needed to make sure that
+       same incident is not fetched more than once.
 
     Args:
-        client:
-        params:
-        last_run:
+        client (Client): FraudWatch client to perform API call to fetch incidents.
+        params (Dict): Demisto params.
 
     Returns:
-
+        A tuple of Incidents that have been fetched, and the new run parameters.
     """
+    last_run = demisto.getLastRun()
     brand = params.get('brand')
     status = params.get('status')
 
@@ -283,14 +292,14 @@ def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
         except Exception as e:
             raise e
 
-        incident = {
-            'name': 'TODO',
+        incident_obj = {
+            'name': f'''{incident.get('brand')}:{incident.get('identifier')}''',
             'type': 'FraudWatch Incident',
             'occurred': incident.get('date_opened'),
             'rawJSON': json.dumps(incident)
         }
 
-        incidents_obj_list.append(incident)
+        incidents_obj_list.append(incident_obj)
 
     current_time = datetime.now(timezone.utc)
     return incidents_obj_list, {
@@ -299,7 +308,7 @@ def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
     }
 
 
-def test_module(client: Client) -> str:
+def test_module(client: Client, params: Dict) -> str:
     """
     Tests API connectivity and authentication'
 
@@ -308,15 +317,17 @@ def test_module(client: Client) -> str:
     Raises exceptions if something goes wrong.
 
     Args:
-        client (Client):
+        client (Client): FraudWatch client to perform the API call.
+        params (Dict): Demisto params.
 
     Returns:
         'ok' if test passed, anything else will fail the test.
     """
+    message = 'ok'
     try:
-        message = 'ok'
+        fetch_incidents_command(client, params)
     except DemistoException as e:
-        if 'Forbidden' in str(e) or 'Authorization' in str(e):  # TODO: make sure you capture authentication errors
+        if 'Forbidden' in str(e) or 'Authorization' in str(e):  # TODO CAPTURE ERRORS
             message = 'Authorization Error: make sure API Key is correctly set'
         else:
             raise e
@@ -740,12 +751,11 @@ def main() -> None:
             proxy=proxy)
 
         if command == 'test-module':
-            result = test_module(client)
+            result = test_module(client, params)
             return_results(result)
 
         elif command == 'fetch-incidents':
-            last_run = demisto.getLastRun()
-            incidents, next_run = fetch_incidents_command(client, params, last_run)
+            incidents, next_run = fetch_incidents_command(client, params)
             demisto.setLastRun(next_run)
             demisto.incidents(incidents)
 
