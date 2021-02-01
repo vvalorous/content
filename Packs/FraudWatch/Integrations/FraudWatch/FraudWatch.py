@@ -1,9 +1,10 @@
+import demistomock as demisto  # noqa: F401
+from CommonServerPython import *  # noqa: F401
 from copy import deepcopy
 
 from dateutil import parser as dp
 import pytz
-from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
-from CommonServerUserPython import *  # noqa
+
 
 ''' CONSTANTS '''
 MINIMUM_PAGE_VALUE = 0
@@ -747,9 +748,6 @@ def main() -> None:
             base_url=BASE_URL,
             verify=verify_certificate,
             proxy=proxy)
-
-        result = test_module(client, params)
-        return_results(result)
 
         if command == 'test-module':
             result = test_module(client, params)
