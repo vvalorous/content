@@ -284,8 +284,9 @@ def fetch_incidents_command(client: Client, params: Dict):
     incidents = raw_response.get('incidents')
 
     incidents_obj_list: List[Dict[str, Any]] = []
-
+    demisto.error(f'starting incidents, total: {len(incidents)}')
     for incident in incidents:
+        demisto.debug(f'===={incident}====')
         try:
             incident_date_opened = get_time_parameter(incident.get('date_opened'))
             if incident_date_opened < last_fetch_time:
@@ -753,6 +754,7 @@ def main() -> None:
             return_results(result)
 
         elif command == 'fetch-incidents':
+            demisto.error('=======Calling fetch incidents!=======')
             incidents, next_run = fetch_incidents_command(client, params)
             demisto.setLastRun(next_run)
             demisto.incidents(incidents)
