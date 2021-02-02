@@ -4,12 +4,11 @@ from copy import deepcopy
 
 import pytz
 
-
 ''' CONSTANTS '''
 MINIMUM_PAGE_VALUE = 0
 MINIMUM_LIMIT_INCIDENTS_VALUE = 1
 MINIMUM_LIMIT_BRANDS_VALUE = 20
-BASE_URL = 'https://www.phishportal.com/v1/'
+BASE_URL = 'http://www.phishportal.com/v1/'
 
 FRAUD_WATCH_DATE_FORMAT = '%Y-%m-%d'
 
@@ -36,20 +35,6 @@ class Client(BaseClient):
         }
         super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
 
-    def http_request(self, method: str, url_suffix: str, params: Dict = None, headers: Dict = None, data: Dict = None):
-        try:
-            return self._http_request(
-                method=method,
-                url_suffix=url_suffix,
-                params=params,
-                data=data,
-                headers=headers
-            )
-        except DemistoException as e:
-            if 'Not Found' in str(e):
-                raise DemistoException('Error occurred. Make sure arguments are correct')
-            raise e
-
     # def get_bearer_token(self):
     #     """
     #     Login using the credentials and store the cookie
@@ -64,7 +49,7 @@ class Client(BaseClient):
     #             # Bearer Token is still valid - did not expire yet
     #             return bearer_token
     #
-    #     response = self.http_request(method='POST', url_suffix='token/refresh')
+    #     response = self._http_request(method='POST', url_suffix='token/refresh')
     #     bearer_token = response.get('token')
     #     expiration_time = response.get('expiry')
     #
@@ -94,7 +79,7 @@ class Client(BaseClient):
         if to_date:
             params['to'] = to_date
 
-        return self.http_request(
+        return self._http_request(
             method='GET',
             url_suffix='incidents',
             params=params
@@ -103,7 +88,7 @@ class Client(BaseClient):
     def fraud_watch_incident_report(self, brand: str, incident_type: Optional[str], reference_id: Optional[str],
                                     primary_url: str, urls: Optional[List[str]], evidence: Optional[str],
                                     instructions: Optional[str]):
-        return self.http_request(
+        return self._http_request(
             method='POST',
             url_suffix='incidents',
             data=assign_params(
@@ -120,7 +105,7 @@ class Client(BaseClient):
 
     def fraud_watch_incident_update(self, incident_id: str, brand: Optional[str], reference_id: Optional[str],
                                     instructions: Optional[str]):
-        return self.http_request(
+        return self._http_request(
             method='PUT',
             url_suffix=f'incident/{incident_id}',
             data=assign_params(
@@ -132,25 +117,25 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_list_by_id(self, incident_id: Optional[str]):
-        return self.http_request(
+        return self._http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}'
         )
 
     def fraud_watch_incident_get_by_reference(self, reference_id: Optional[str]):
-        return self.http_request(
+        return self._http_request(
             method='GET',
             url_suffix=f'incident/reference/{reference_id}'
         )
 
-    def fraud_watch_incident_forensic_get(self, incident_id: str):
-        return self.http_request(
+    def fraud_watch_incident_forensic_get(self, incident_id: Optional[str]):
+        return self._http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/forensic'
         )
 
-    def fraud_watch_incident_contact_emails_list(self, incident_id: str, page: Optional[int], limit: Optional[int]):
-        return self.http_request(
+    def fraud_watch_incident_contact_emails_list(self, incident_id: Optional[str], page: Optional[int], limit: Optional[int]):
+        return self._http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/message',
             params=assign_params(
@@ -160,7 +145,7 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_messages_add(self, incident_id: Optional[str], message_content: Any):
-        return self.http_request(
+        return self._http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/message/add',
             data=message_content,
@@ -168,23 +153,22 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_urls_add(self, incident_id: Optional[str], urls: Dict[str, List[str]]):
-        return self.http_request(
+        return self._http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/urls/add',
             data=urls,
             headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
-    def fraud_watch_attachment_upload_command(self, incident_id: str, attachment: Any):
-        return self.http_request(
+    def fraud_watch_attachment_upload_command(self, incident_id: Optional[str], file: Any):
+        return self._http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/upload',
-            data=attachment,
-            headers={**self.base_headers, **self.MULTIPART_DATA_HEADER}
+            files=file
         )
 
     def fraud_watch_brands_list(self, page: Optional[int], limit: Optional[int]):
-        return self.http_request(
+        return self._http_request(
             method='GET',
             url_suffix='account/brands',
             params=assign_params(
@@ -270,13 +254,19 @@ def fetch_incidents_command(client: Client, params: Dict):
     status = params.get('status')
     limit = params.get('max_fetch')
 
+    a = datetime.now(timezone.utc)
+    b = a.isoformat()
+    c = arg_to_datetime(b)
+    d = a == c
+
     fetch_time_string = params.get('first_fetch', '5 days').strip()
     first_fetch_time = get_time_parameter(fetch_time_string)
     from_date = last_run.get('last_fetch_day', first_fetch_time.strftime(FRAUD_WATCH_DATE_FORMAT))
-    last_fetch_time = last_run.get('last_fetch_date_time', first_fetch_time)
+    to_date = datetime.now(timezone.utc).strftime(FRAUD_WATCH_DATE_FORMAT)
+    last_fetch_time = arg_to_datetime(last_run.get('last_fetch_date_time', first_fetch_time.isoformat()))
 
     raw_response = client.fraud_watch_incidents_list(brand=brand, status=status, page=None, limit=limit,
-                                                     from_date=from_date, to_date=None)
+                                                     from_date=from_date, to_date=to_date)
 
     if raw_response.get('error'):
         raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
@@ -284,9 +274,7 @@ def fetch_incidents_command(client: Client, params: Dict):
     incidents = raw_response.get('incidents')
 
     incidents_obj_list: List[Dict[str, Any]] = []
-    demisto.error(f'starting incidents, total: {len(incidents)}')
     for incident in incidents:
-        demisto.debug(f'===={incident}====')
         try:
             incident_date_opened = get_time_parameter(incident.get('date_opened'))
             if incident_date_opened < last_fetch_time:
@@ -298,8 +286,7 @@ def fetch_incidents_command(client: Client, params: Dict):
             'name': f'''{incident.get('brand')}:{incident.get('identifier')}''',
             'type': 'FraudWatch Incident',
             'occurred': incident.get('date_opened'),
-            'rawJSON': json.dumps(incident),
-            'severity': 'Informational'
+            'rawJSON': json.dumps(incident)
         }
 
         incidents_obj_list.append(incident_obj)
@@ -307,7 +294,7 @@ def fetch_incidents_command(client: Client, params: Dict):
     current_time = datetime.now(timezone.utc)
     return incidents_obj_list, {
         'last_fetch_day': current_time.strftime(FRAUD_WATCH_DATE_FORMAT),
-        'last_fetch_date_time': current_time
+        'last_fetch_date_time': current_time.isoformat()
     }
 
 
@@ -367,6 +354,8 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
     from_date = args.get('from')
     to_date = args.get('to')
+    if from_date and not to_date:
+        to_date = datetime.now(timezone.utc).strftime(FRAUD_WATCH_DATE_FORMAT)
 
     raw_response = client.fraud_watch_incidents_list(brand, status, page, limit, from_date, to_date)
     if raw_response.get('error'):
@@ -534,7 +523,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
 
     raw_response = client.fraud_watch_incident_forensic_get(incident_id)
 
@@ -574,7 +563,7 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
     page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
     limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
 
@@ -668,9 +657,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     - File Attachment: Entry id of the attachment to be added to the incident which corresponds to Incident ID.
 
     Known possible errors that could cause error to be returned by FraudWatch service:
-    - Unknown incident id. # TODO CHECK ON FILE ERROR TOO
-    # TODO add context path
-    # TODO ADD TESTS
+    - Unknown incident id.
 
     Args:
         client (Client): FraudWatch client to perform the API calls.
@@ -679,22 +666,27 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
     entry_id = args.get('attachment')
 
     try:
         # entry id of uploaded file to war room
         file_info = demisto.getFilePath(entry_id)
-        with open(file_info['path'], 'rb') as uploaded_file:
-            raw_response = client.fraud_watch_attachment_upload_command(incident_id, uploaded_file)
-
-            return CommandResults(
-                raw_response=raw_response,
-                readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
-                                f'{incident_id}'
-            )
+        file = open(file_info['path'], 'rb')
     except Exception:
         raise DemistoException(F"Entry {entry_id} does not contain a file.")
+
+    files = [
+        ('incident_attachment',
+         (file_info['name'], file))
+    ]
+    raw_response = client.fraud_watch_attachment_upload_command(incident_id, files)
+
+    return CommandResults(
+        raw_response=raw_response,
+        readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
+                        f'{incident_id}'
+    )
 
 
 def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResults:
@@ -754,7 +746,6 @@ def main() -> None:
             return_results(result)
 
         elif command == 'fetch-incidents':
-            demisto.error('=======Calling fetch incidents!=======')
             incidents, next_run = fetch_incidents_command(client, params)
             demisto.setLastRun(next_run)
             demisto.incidents(incidents)
