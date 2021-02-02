@@ -41,7 +41,7 @@ class Client(BaseClient):
     #     """
     #     integration_context = demisto.getIntegrationContext()
     #     bearer_token = integration_context.get('bearer_token', self.api_key)
-    #     valid_until = integration_context.get('valid_until')
+    #     valid_until = get_time_parameter(integration_context.get('valid_until'))
     #     utc_time_now = datetime.now(timezone.utc)
     #
     #     if bearer_token and valid_until:
@@ -55,11 +55,8 @@ class Client(BaseClient):
     #
     #     new_integration_context = {
     #         'bearer_token': bearer_token,
-    #         'valid_until': dp.parse(expiration_time)
+    #         'valid_until': expiration_time
     #     }
-    #     if 'last_fetch_date_time' in integration_context:
-    #         new_integration_context['last_fetch_date_time'] = integration_context['last_fetch_date_time']
-    #
     #     demisto.setIntegrationContext(new_integration_context)
     #
     #     return bearer_token
