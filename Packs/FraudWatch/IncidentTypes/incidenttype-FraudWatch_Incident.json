@@ -19,7 +19,7 @@
     "disabled": false,
     "reputationCalc": 0,
     "onChangeRepAlg": 0,
-    "layout": "FraudWatch_Incident",
+    "layout": "FraudWatch Incident",
     "detached": false,
     "extractSettings": {
         "mode": "Specific",

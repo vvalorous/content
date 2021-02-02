@@ -11,7 +11,7 @@
         {
           "identifier": "JJJ-444222",
           "reference_id": "123aaa",
-          "url": "http://iran.com",
+          "url": "http://www.malicious.com",
           "status": "new",
           "type": "Phishing",
           "brand": "Testing Brand 1",
@@ -63,7 +63,7 @@
         {
           "identifier": "JJJ-444222",
           "reference_id": "123aaa",
-          "url": "http://iran.com",
+          "url": "http://www.malicious.com",
           "status": "new",
           "type": "Phishing",
           "brand": "Testing Brand 1",
@@ -186,7 +186,7 @@
     "response": {
       "identifier": "JJJ-123123",
       "reference_id": "123aaa",
-      "url": "http://malicious.com",
+      "url": "http://www.malicious.com",
       "status": "new",
       "type": "Phishing",
       "brand": "Testing Brand 1",
@@ -213,7 +213,7 @@
       "outputs": {
         "identifier": "JJJ-123123",
         "reference_id": "123aaa",
-        "url": "http://malicious.com",
+        "url": "http://www.malicious.com",
         "status": "new",
         "type": "Phishing",
         "brand": "Testing Brand 1",
@@ -254,9 +254,9 @@
         "malicious2.com"
       ],
       "host_domain_registrar": {
-        "name": "Moniker Online Services LLC",
-        "email": "http://www.moniker.com",
-        "country": "abuse@moniker.com"
+        "name": "Online Services LLC",
+        "email": "http://www.services.com",
+        "country": "abuse@services.com"
       },
       "host_site_owner": [],
       "host_site_admin": [],
@@ -276,9 +276,9 @@
           "malicious2.com"
         ],
         "host_domain_registrar": {
-          "name": "Moniker Online Services LLC",
-          "email": "http://www.moniker.com",
-          "country": "abuse@moniker.com"
+          "name": "Online Services LLC",
+          "email": "",
+          "country": "abuse@services.com"
         },
         "host_site_owner": [],
         "host_site_admin": [],
