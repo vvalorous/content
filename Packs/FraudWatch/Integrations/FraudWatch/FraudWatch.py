@@ -251,11 +251,6 @@ def fetch_incidents_command(client: Client, params: Dict):
     status = params.get('status')
     limit = params.get('max_fetch')
 
-    a = datetime.now(timezone.utc)
-    b = a.isoformat()
-    c = arg_to_datetime(b)
-    d = a == c
-
     fetch_time_string = params.get('first_fetch', '5 days').strip()
     first_fetch_time = get_time_parameter(fetch_time_string)
     from_date = last_run.get('last_fetch_day', first_fetch_time.strftime(FRAUD_WATCH_DATE_FORMAT))
@@ -314,7 +309,7 @@ def test_module(client: Client, params: Dict) -> str:
     try:
         fetch_incidents_command(client, params)
     except DemistoException as e:
-        if 'Forbidden' in str(e) or 'Authorization' in str(e):  # TODO CAPTURE ERRORS
+        if 'Forbidden' in str(e) or 'Authorization' in str(e):
             message = 'Authorization Error: make sure API Key is correctly set'
         else:
             raise e
