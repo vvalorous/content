@@ -7,7 +7,7 @@ from CommonServerPython import *  # noqa: F401
 
 ''' CONSTANTS '''
 MINIMUM_POSITIVE_VALUE = 1
-BASE_URL = 'http://www.phishportal.com/v1/'
+BASE_URL = 'www.phishportal.com/v1/'
 
 FRAUD_WATCH_DATE_FORMAT = '%Y-%m-%d'
 
@@ -722,13 +722,14 @@ def main() -> None:
     verify_certificate = not params.get('insecure', False)
     proxy = params.get('proxy', False)
     api_key = params.get('api_key')
+    protocol = params.get('protocol', 'https')
 
     demisto.debug(f'Command being called is {command}')
     try:
 
         client = Client(
             api_key=api_key,
-            base_url=BASE_URL,
+            base_url=f'{protocol}://{BASE_URL}',
             verify=verify_certificate,
             proxy=proxy)
 

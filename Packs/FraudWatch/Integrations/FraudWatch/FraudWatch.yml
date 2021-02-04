@@ -68,11 +68,13 @@ script:
       defaultValue: '20'
     - description: Retrieve incidents by the given page number.
       name: page
-    - description: "Retrieve alerts that their date opened day is higher or equal to 'from'
-        value. Format is: yyyy-mm-dd. If 'to' argument is not given, default value for 'to' is current day."
+    - description: "Retrieve alerts that their date opened day is higher or equal
+         to 'from' value. Format is: yyyy-mm-dd. If 'to' argument is not given, default
+         value for 'to' is current day."
       name: from
-    - description: "Retrieve alerts that their date opened day is lower or equal to 'to'
-        value. Format is: yyyy-mm-dd. If 'from' argument is not given, default value for 'from' is 12 months before 'to'."
+    - description: "Retrieve alerts that their date opened day is lower or equal to
+         'to' value. Format is: yyyy-mm-dd. If 'from' argument is not given, default
+         value for 'from' is 12 months before 'to'."
       name: to
     description: Get list of incidents from FraudWatch service.
     name: fraudwatch-incidents-list
@@ -139,7 +141,8 @@ script:
       name: brand
       required: true
     - auto: PREDEFINED
-      description: The type of the incident to be associated to the reported incident. Returns error if brand does not exist.
+      description: The type of the incident to be associated to the reported incident.
+        Returns error if brand does not exist.
       name: type
       predefined:
       - phishing
@@ -166,7 +169,8 @@ script:
       name: urls
     - description: Evidence to be added (such as logs, etc...) to the reported incident.
       name: evidence
-    - description: Additional instructions to be added for FraudWatch Security Team about the reported incident.
+    - description: Additional instructions to be added for FraudWatch Security Team
+        about the reported incident.
       name: instructions
     description: Report an incident to FraudWatch service.
     name: fraudwatch-incident-report
@@ -217,10 +221,12 @@ script:
       description: Current active duration of the new reported incident.
       type: Unknown
     - contextPath: FraudWatch.Incident.date_opened
-      description: The date the new reported incident was opened. Has value of the day incident was reported.
+      description: The date the new reported incident was opened. Has value of the
+        day incident was reported.
       type: Date
     - contextPath: FraudWatch.Incident.date_closed
-      description: The date new reported incident was closed. Starts empty, as incident was just created.
+      description: The date new reported incident was closed. Starts empty, as incident
+        was just created.
       type: Date
     - contextPath: FraudWatch.Incident.additional_urls
       description: Additional URLs associated to the new reported incident.
@@ -229,22 +235,31 @@ script:
       description: Link to the new reported incident page in FraudWatch User Interface.
       type: String
   - arguments:
-    - description: The ID of the incident to be updated. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to be updated. Incident ID is the 'identifier'
+        field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
-    - description: Updates the incident associated to the 'incident_id' with brand given.
+    - description: Updates the incident associated to the 'incident_id' with brand
+        given.
       name: brand
-    - description: Updates the incident associated to the 'incident_id' with reference ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier' to retrieve specific incident's details by its reference id.
+    - description: Updates the incident associated to the 'incident_id' with reference
+        ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier'
+        to retrieve specific incident's details by its reference id.
       name: reference_id
-    - description: Updates the incident associated to the 'incident_id' with additional instructions for FraudWatch Security Team.
+    - description: Updates the incident associated to the 'incident_id' with additional
+        instructions for FraudWatch Security Team.
       name: instructions
-    description: Updates the incident associated to the 'incident_id' with given arguments values.
+    description: Updates the incident associated to the 'incident_id' with given arguments
+      values.
     name: fraudwatch-incident-update
   - arguments:
-    - description: The ID of the incident to be retrieve its details. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to be retrieve its details. Incident ID
+        is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
-    - description: Reference id of the incident to be retrieve its details. If more than
-        one incident is associated to 'reference_id',returns the details of the incident with the latest date opened. Reference ID is the 'reference_id' field returned by command 'fraudwatch-incidents-list'.
+    - description: Reference id of the incident to be retrieve its details. If more
+        than one incident is associated to 'reference_id',returns the details of the
+        incident with the latest date opened. Reference ID is the 'reference_id' field
+        returned by command 'fraudwatch-incidents-list'.
       name: reference_id
     description: Gets an incident from FraudWatch service by its reference ID or incident
       ID. Exactly one argument of 'reference_id' and 'incident_id' should be given.
@@ -308,11 +323,12 @@ script:
       description: Link to the incident page in FraudWatch User Interface.
       type: String
   - arguments:
-    - description: The ID of the incident to retrieve its forensic data. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to retrieve its forensic data. Incident
+        ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
-    description: Gets forensic data of an incident associated to the given
-      incident ID.
+    description: Gets forensic data of an incident associated to the given incident
+      ID.
     name: fraudwatch-incident-forensic-get
     outputs:
     - contextPath: FraudWatch.IncidentForensicData.host_provider.name
@@ -337,7 +353,8 @@ script:
       description: Identifier of the incident.
       type: String
   - arguments:
-    - description: The ID of the incident to retrieve its email contacts data. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to retrieve its email contacts data. Incident
+        ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
     - description: Maximum number of contact emails in a page. Maximum number is 200.
@@ -345,8 +362,8 @@ script:
       name: limit
     - description: Retrieve contact emails by the given page number.
       name: page
-    description: Provides contact emails for the incident associated to the
-      given incident ID.
+    description: Provides contact emails for the incident associated to the given
+      incident ID.
     name: fraudwatch-incident-contact-emails-list
     outputs:
     - contextPath: FraudWatch.IncidentContacts.noteId
@@ -365,25 +382,27 @@ script:
       description: The date of the email.
       type: Date
   - arguments:
-    - description: The ID of the incident to add a message to its email contacts. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to add a message to its email contacts.
+        Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
     - description: Content of the message.
       name: message_content
       required: true
-    description: Add a new message to be associated to the incident associated
-      to the given incident ID.
+    description: Add a new message to be associated to the incident associated to
+      the given incident ID.
     name: fraudwatch-incident-messages-add
   - arguments:
-    - description: The ID of the incident to add additional urls to. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to add additional urls to. Incident ID is
+        the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
     - description: Comma separated list. Additional URLs to be added to the incident
         associated to 'incident_id'.
       name: urls
       required: true
-    description: Adds additional URLs to the incident associated to the given
-      incident ID. Fails if one of the urls given already exists.
+    description: Adds additional URLs to the incident associated to the given incident
+      ID. Fails if one of the urls given already exists.
     name: fraudwatch-incident-urls-add
     outputs:
     - contextPath: FraudWatch.IncidentUrls.success
@@ -393,14 +412,15 @@ script:
       description: The new URLs that have been added.
       type: String
   - arguments:
-    - description: The ID of the incident to add a file attachment to. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
+    - description: The ID of the incident to add a file attachment to. Incident ID
+        is the 'identifier' field returned by command 'fraudwatch-incidents-list'.
       name: incident_id
       required: true
     - description: Entry id in Demisto of the attachment to be added to the incident.
       name: attachment
       required: true
-    description: Adds a new file attachment to the incident associated to the
-      given incident ID.
+    description: Adds a new file attachment to the incident associated to the given
+      incident ID.
     name: fraudwatch-incident-attachment-upload
   - arguments:
     - description: Total number of brands in a page. Maximum number is 100.
