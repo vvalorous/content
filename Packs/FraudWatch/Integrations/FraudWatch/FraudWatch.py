@@ -1,8 +1,9 @@
-import demistomock as demisto  # noqa: F401
-from CommonServerPython import *  # noqa: F401
 from copy import deepcopy
 
 import pytz
+
+import demistomock as demisto  # noqa: F401
+from CommonServerPython import *  # noqa: F401
 
 ''' CONSTANTS '''
 MINIMUM_POSITIVE_VALUE = 1
@@ -179,8 +180,9 @@ class Client(BaseClient):
 
 def get_and_validate_positive_int_argument(args: Dict, argument_name: str) -> Optional[int]:
     """
-    Extracts int argument from Demisto arguments, and validates that:
-    - min <= argument.
+    Extracts int argument from Demisto arguments.
+    If argument exists, validates that:
+    - min <= argument's value.
 
     Args:
         args (Dict): Demisto arguments.
@@ -189,9 +191,11 @@ def get_and_validate_positive_int_argument(args: Dict, argument_name: str) -> Op
     Returns:
         - If argument exists and is equal or higher than min, returns argument.
         - If argument exists and is lower than min, raises DemistoException.
-        - If argument does not exist returns MINIMUM_POSITIVE_VALUE.
     """
-    argument_value = arg_to_number(args.get(argument_name, MINIMUM_POSITIVE_VALUE), arg_name=argument_name)
+    argument_value = arg_to_number(args.get(argument_name), arg_name=argument_name)
+
+    if not argument_value:
+        return None
 
     if not MINIMUM_POSITIVE_VALUE <= argument_value:
         raise DemistoException(f'{argument_name} should be equal or higher than {MINIMUM_POSITIVE_VALUE}')
@@ -338,7 +342,7 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     brand = args.get('brand')
     status = args.get('status')
     page = get_and_validate_positive_int_argument(args, 'page')
-    limit = get_and_validate_positive_int_argument(args, 'limit',)
+    limit = get_and_validate_positive_int_argument(args, 'limit', )
     from_date = args.get('from')
     to_date = args.get('to')
     if from_date and not to_date:
@@ -518,7 +522,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     outputs['identifier'] = incident_id
 
     if remove_empty_elements(raw_response):
-        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", remove_empty_elements(outputs),
+        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", outputs,
                                          removeNull=True)
     else:
         human_readable = f'### Incident id {incident_id} has empty forensic data'

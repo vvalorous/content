@@ -36,18 +36,17 @@ def util_load_json(path):
 command_tests_data = util_load_json('test_data/commands_data.json')
 
 
-@pytest.mark.parametrize('args, argument_name, minimum, expected',
+@pytest.mark.parametrize('args, argument_name, expected',
                          [
-                             ({'page': 3}, 'limit', MINIMUM_POSITIVE_VALUE),
+                             ({'page': 3}, 'limit', None),
                              ({'limit': 4}, 'limit', 4),
-                             ({'limit': 2}, 'limit', 2)
+                             ({'limit': 1}, 'limit', 1)
                          ])
 def test_get_and_validate_positive_int_argument_valid_arguments(args, argument_name, expected):
     """
     Given:
      - Demisto arguments.
      - Argument name to extract from Demisto arguments as number.
-     - Minimum possible value for argument.
 
     When:
      - Case a: Argument does not exist.
@@ -57,9 +56,9 @@ def test_get_and_validate_positive_int_argument_valid_arguments(args, argument_n
     Then:
      - Case a: Ensure that None is returned (limit argument does not exist).
      - Case b: Ensure that limit is returned (4).
-     - Case c: Ensure that limit is returned (2).
+     - Case c: Ensure that limit is returned (1).
     """
-    assert (get_and_validate_positive_int_argument(args, argument_name, minimum)) == expected
+    assert (get_and_validate_positive_int_argument(args, argument_name)) == expected
 
 
 def test_get_and_validate_positive_int_argument_invalid_arguments():
@@ -67,15 +66,14 @@ def test_get_and_validate_positive_int_argument_invalid_arguments():
     Given:
      - Demisto arguments.
      - Argument name to extract from Demisto arguments as number.
-     - Minimum value for argument.
 
     When:
-     - Argument exists, minimum is higher than argument value.
+     - Argument exists and is not positive.
 
     Then:
-     - Ensure that DemistoException is thrown with error message which indicates that value is below minimum.
+     - Ensure that DemistoException is thrown with error message which indicates that value is not positive.
     """
-    with pytest.raises(DemistoException, match='limit should be equal or higher than 4'):
+    with pytest.raises(DemistoException, match=f'limit should be equal or higher than {MINIMUM_POSITIVE_VALUE}'):
         get_and_validate_positive_int_argument({'limit': -3}, 'limit')
 
 
