@@ -5,9 +5,7 @@ from copy import deepcopy
 import pytz
 
 ''' CONSTANTS '''
-MINIMUM_PAGE_VALUE = 0
-MINIMUM_LIMIT_INCIDENTS_VALUE = 1
-MINIMUM_LIMIT_BRANDS_VALUE = 20
+MINIMUM_POSITIVE_VALUE = 1
 BASE_URL = 'http://www.phishportal.com/v1/'
 
 FRAUD_WATCH_DATE_FORMAT = '%Y-%m-%d'
@@ -34,6 +32,23 @@ class Client(BaseClient):
             'Accept': 'application/json'
         }
         super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
+
+    def http_request_with_pagination(self, method: str, url_suffix: str, params: Dict, list_key: str):
+        list_of_raw_responses = []
+        while params['limit'] > 0:
+            raw_response = self._http_request(
+                method=method,
+                url_suffix=url_suffix,
+                params=params
+            )
+            incidents = raw_response.get(list_key)
+            if not incidents:
+                break
+            list_of_raw_responses.append(incidents)
+            params['page'] += 1
+            params['limit'] -= len(incidents)
+        flattened_responses = [raw_response for raw_responses in list_of_raw_responses for raw_response in raw_responses]
+        return flattened_responses
 
     # def get_bearer_token(self):
     #     """
@@ -100,7 +115,7 @@ class Client(BaseClient):
             headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
-    def fraud_watch_incident_update(self, incident_id: str, brand: Optional[str], reference_id: Optional[str],
+    def fraud_watch_incident_update(self, incident_id: Optional[str], brand: Optional[str], reference_id: Optional[str],
                                     instructions: Optional[str]):
         return self._http_request(
             method='PUT',
@@ -131,7 +146,8 @@ class Client(BaseClient):
             url_suffix=f'incident/{incident_id}/forensic'
         )
 
-    def fraud_watch_incident_contact_emails_list(self, incident_id: Optional[str], page: Optional[int], limit: Optional[int]):
+    def fraud_watch_incident_contact_emails_list(self, incident_id: Optional[str], page: Optional[int],
+                                                 limit: Optional[int]):
         return self._http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/message',
@@ -178,28 +194,24 @@ class Client(BaseClient):
 ''' HELPER FUNCTIONS '''
 
 
-def get_and_validate_int_argument(args: Dict, argument_name: str, minimum: int) -> Optional[int]:
+def get_and_validate_positive_int_argument(args: Dict, argument_name: str) -> Optional[int]:
     """
-    Extracts int argument from Demisto arguments, and in case argument exists,
-    validates that:
+    Extracts int argument from Demisto arguments, and validates that:
     - min <= argument.
 
     Args:
         args (Dict): Demisto arguments.
         argument_name (str): The name of the argument to extract.
-        minimum (int): the minimum value the argument can have.
 
     Returns:
         - If argument exists and is equal or higher than min, returns argument.
         - If argument exists and is lower than min, raises DemistoException.
+        - If argument does not exist returns MINIMUM_POSITIVE_VALUE.
     """
-    argument_value = arg_to_number(args.get(argument_name), arg_name=argument_name)
+    argument_value = arg_to_number(args.get(argument_name, MINIMUM_POSITIVE_VALUE), arg_name=argument_name)
 
-    if argument_value is None:
-        return None
-
-    if not minimum <= argument_value:
-        raise DemistoException(f'{argument_name} should be equal or higher than {minimum}')
+    if not MINIMUM_POSITIVE_VALUE <= argument_value:
+        raise DemistoException(f'{argument_name} should be equal or higher than {MINIMUM_POSITIVE_VALUE}')
 
     return argument_value
 
@@ -342,8 +354,8 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     """
     brand = args.get('brand')
     status = args.get('status')
-    page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
-    limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
+    page = get_and_validate_positive_int_argument(args, 'page')
+    limit = get_and_validate_positive_int_argument(args, 'limit',)
     from_date = args.get('from')
     to_date = args.get('to')
     if from_date and not to_date:
@@ -443,7 +455,7 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     Returns:
         CommandResults.
     """
-    incident_id = args.get('incident_id', 'Incident ID is missing')
+    incident_id = args.get('incident_id')
     brand = args.get('brand')
     reference_id = args.get('reference_id')
     instructions = args.get('instructions')
@@ -556,8 +568,8 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
         CommandResults.
     """
     incident_id = args.get('incident_id')
-    page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
-    limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_INCIDENTS_VALUE)
+    page = get_and_validate_positive_int_argument(args, 'page')
+    limit = get_and_validate_positive_int_argument(args, 'limit')
 
     try:
         raw_response = client.fraud_watch_incident_contact_emails_list(incident_id, page, limit)
@@ -694,8 +706,8 @@ def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResult
     Returns:
         CommandResults.
     """
-    page = get_and_validate_int_argument(args, 'page', minimum=MINIMUM_PAGE_VALUE)
-    limit = get_and_validate_int_argument(args, 'limit', minimum=MINIMUM_LIMIT_BRANDS_VALUE)
+    page = get_and_validate_positive_int_argument(args, 'page')
+    limit = get_and_validate_positive_int_argument(args, 'limit')
     raw_response = client.fraud_watch_brands_list(page, limit)
 
     outputs = raw_response.get('brands')

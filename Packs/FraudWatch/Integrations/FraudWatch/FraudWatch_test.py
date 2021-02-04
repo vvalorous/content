@@ -10,13 +10,12 @@ import pytest
 import pytz
 
 from CommonServerPython import DemistoException, datetime, CommandResults, demisto
-from FraudWatch import get_and_validate_int_argument, get_time_parameter, Client, fraud_watch_incidents_list_command, \
-    fraud_watch_incident_get_by_identifier_command, fraud_watch_incident_forensic_get_command, \
-    fraud_watch_incident_contact_emails_list_command, fraud_watch_brands_list_command, \
-    fraud_watch_incident_report_command, fraud_watch_incident_update_command, fraud_watch_incident_messages_add_command, \
-    fraud_watch_incident_urls_add_command, BASE_URL
+from FraudWatch import get_and_validate_positive_int_argument, get_time_parameter, Client, \
+    fraud_watch_incidents_list_command, fraud_watch_incident_get_by_identifier_command, \
+    fraud_watch_incident_forensic_get_command, fraud_watch_incident_contact_emails_list_command, \
+    fraud_watch_brands_list_command, fraud_watch_incident_report_command, fraud_watch_incident_update_command, \
+    fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE
 
-# fraud_watch_attachment_upload_command TODO WRITE TEST
 demisto.setIntegrationContext({
     'bearer_token': 'api_key',
     'valid_until': datetime.now(timezone.utc) + timedelta(days=7)
@@ -39,11 +38,11 @@ command_tests_data = util_load_json('test_data/commands_data.json')
 
 @pytest.mark.parametrize('args, argument_name, minimum, expected',
                          [
-                             ({'page': 3}, 'limit', 4, None),
-                             ({'limit': 4}, 'limit', 3, 4),
-                             ({'limit': 2}, 'limit', 2, 2)
+                             ({'page': 3}, 'limit', MINIMUM_POSITIVE_VALUE),
+                             ({'limit': 4}, 'limit', 4),
+                             ({'limit': 2}, 'limit', 2)
                          ])
-def test_get_and_validate_int_argument_valid_arguments(args, argument_name, minimum, expected):
+def test_get_and_validate_positive_int_argument_valid_arguments(args, argument_name, expected):
     """
     Given:
      - Demisto arguments.
@@ -60,10 +59,10 @@ def test_get_and_validate_int_argument_valid_arguments(args, argument_name, mini
      - Case b: Ensure that limit is returned (4).
      - Case c: Ensure that limit is returned (2).
     """
-    assert (get_and_validate_int_argument(args, argument_name, minimum)) == expected
+    assert (get_and_validate_positive_int_argument(args, argument_name, minimum)) == expected
 
 
-def test_get_and_validate_int_argument_invalid_arguments():
+def test_get_and_validate_positive_int_argument_invalid_arguments():
     """
     Given:
      - Demisto arguments.
@@ -77,7 +76,7 @@ def test_get_and_validate_int_argument_invalid_arguments():
      - Ensure that DemistoException is thrown with error message which indicates that value is below minimum.
     """
     with pytest.raises(DemistoException, match='limit should be equal or higher than 4'):
-        get_and_validate_int_argument({'limit': 3}, 'limit', 4)
+        get_and_validate_positive_int_argument({'limit': -3}, 'limit')
 
 
 @pytest.mark.parametrize('arg, expected',
