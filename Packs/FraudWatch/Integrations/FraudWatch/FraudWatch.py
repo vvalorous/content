@@ -518,14 +518,15 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
 
     raw_response = client.fraud_watch_incident_forensic_get(incident_id)
 
-    outputs = deepcopy(raw_response)
-    outputs['identifier'] = incident_id
+    outputs = remove_empty_elements(raw_response)
 
-    if remove_empty_elements(raw_response):
+    if outputs:
         human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", outputs,
                                          removeNull=True)
     else:
         human_readable = f'### Incident id {incident_id} has empty forensic data'
+
+    outputs['identifier'] = incident_id
 
     return CommandResults(
         outputs_prefix='FraudWatch.IncidentForensicData',

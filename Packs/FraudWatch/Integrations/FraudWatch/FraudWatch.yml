@@ -16,6 +16,7 @@ configuration:
   - https
   required: false
   type: 15
+  defaultvalue: "https"
 - display: Fetch incidents
   name: isFetch
   required: false
@@ -48,8 +49,7 @@ configuration:
   name: proxy
   required: false
   type: 8
-description: TODO [Enter a comprehensive, yet concise, description of what the integration
-  does, what use cases it is designed for, etc.]
+description: Manage incidents via the Fraudwatch API. FraudWatch International provides a fully managed Enterprise Digital Brand Protection Suite, including online brand management & monitoring as well as providing other brand protection solutions that protect organizations and their customers around the world against online brand-related abuse.
 display: FraudWatch
 name: FraudWatch
 script:

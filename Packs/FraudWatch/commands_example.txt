@@ -1,0 +1,11 @@
+!fraudwatch-incidents-list brand="Testing Brand 1" from="2020-12-12" limit=3 status=monitor
+!fraudwatch-incident-report brand="Testing Brand 2" primary_url="malicious.com" type=brand_abuse reference_id="malicious1" urls="abuse.com"
+!fraudwatch-incident-update incident_id=JJJ-504830 brand="Testing Brand 2" reference_id="reference123"
+!fraudwatch-incident-get-by-identifier incident_id=JJJ-168840
+!fraudwatch-incident-get-by-identifier reference_id=reference123
+!fraudwatch-incident-forensic-get incident_id=JJJ-397266
+!fraudwatch-incident-contact-emails-list incident_id=JJJ-898410 limit=2
+!fraudwatch-incident-messages-add incident_id=JJJ-898410 message_content="This incident is very malicious, please monitor it"
+!fraudwatch-incident-urls-add incident_id=JJJ-674271 urls=malicious1.com,malicious2.com
+!fraudwatch-incident-attachment-upload attachment=zPXrMZSsNhH5g6rrxBLkhA@ea874720-782f-4095-8d76-595e9c41f3ce incident_id=JJJ-604206
+!fraudwatch-brands-list
