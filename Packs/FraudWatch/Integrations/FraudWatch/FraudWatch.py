@@ -33,23 +33,6 @@ class Client(BaseClient):
         }
         super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
 
-    def http_request_with_pagination(self, method: str, url_suffix: str, params: Dict, list_key: str):
-        list_of_raw_responses = []
-        while params['limit'] > 0:
-            raw_response = self._http_request(
-                method=method,
-                url_suffix=url_suffix,
-                params=params
-            )
-            incidents = raw_response.get(list_key)
-            if not incidents:
-                break
-            list_of_raw_responses.append(incidents)
-            params['page'] += 1
-            params['limit'] -= len(incidents)
-        flattened_responses = [raw_response for raw_responses in list_of_raw_responses for raw_response in raw_responses]
-        return flattened_responses
-
     # def get_bearer_token(self):
     #     """
     #     Login using the credentials and store the cookie
