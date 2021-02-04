@@ -8,6 +8,14 @@ configuration:
   name: api_key
   required: true
   type: 4
+- additionalinfo: 'The communication protocol. Possible values are: "http" and "https".'
+  display: Protocol
+  name: protocol
+  options:
+  - http
+  - https
+  required: false
+  type: 15
 - display: Fetch incidents
   name: isFetch
   required: false
