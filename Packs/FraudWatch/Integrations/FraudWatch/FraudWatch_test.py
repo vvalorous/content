@@ -16,13 +16,14 @@ from FraudWatch import get_and_validate_positive_int_argument, get_time_paramete
     fraud_watch_brands_list_command, fraud_watch_incident_report_command, fraud_watch_incident_update_command, \
     fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE
 
+FRAUD_WATCH_URL = f'http://{BASE_URL}'
 demisto.setIntegrationContext({
     'bearer_token': 'api_key',
     'valid_until': datetime.now(timezone.utc) + timedelta(days=7)
 })
 client = Client(
     api_key='api_key',
-    base_url=BASE_URL,
+    base_url=FRAUD_WATCH_URL,
     verify=False,
     proxy=False
 )
@@ -152,7 +153,7 @@ def test_commands_get_methods(requests_mock, command_function: Callable[[Client,
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.get(
-        f'{BASE_URL}{url_suffix}',
+        f'{FRAUD_WATCH_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(
@@ -192,7 +193,7 @@ def test_commands_put_methods(requests_mock, command_function: Callable[[Client,
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.put(
-        f'{BASE_URL}{url_suffix}',
+        f'{FRAUD_WATCH_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(
@@ -249,7 +250,7 @@ def test_commands_post_methods(requests_mock, command_function: Callable[[Client
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.post(
-        f'{BASE_URL}{url_suffix}',
+        f'{FRAUD_WATCH_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(
