@@ -1,9 +1,11 @@
-from copy import deepcopy
-
 import pytz
+import urllib3
 
 import demistomock as demisto  # noqa: F401
 from CommonServerPython import *  # noqa: F401
+
+# disable insecure warnings
+urllib3.disable_warnings()
 
 ''' CONSTANTS '''
 MINIMUM_POSITIVE_VALUE = 1
