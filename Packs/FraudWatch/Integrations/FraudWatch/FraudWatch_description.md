@@ -6,7 +6,7 @@
 4. On top of the page, you should see API Token.
 5. If API token is out of date, click on **Regenerate Token** button near the **API token**, and an API token in date will be generated.
 
-![FraudWatch Retrieve API token](https://raw.githubusercontent.com/demisto/content/6dfcd7b8e8620ca2e8f85d1bc46c13cf924633a4/Packs/FraudWatch/doc_files/Generate_Token.png)
+![FraudWatch Retrieve API token](https://raw.githubusercontent.com/demisto/content/66001c381794d68b1571970485fcf5ce41c076e5/Packs/FraudWatch/doc_files/Generate_Token.png)
 
 [comment]: <> (**after first configured API token, Demisto refreshes the key when it becomes out dated.**)
 [comment]: <> (IMAGE TOO BIG TO ADD AT THIS MOMENT)
