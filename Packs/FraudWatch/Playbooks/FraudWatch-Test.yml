@@ -1,0 +1,1046 @@
+id: FraudWatch-Test
+version: -1
+name: FraudWatch-Test
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: cf98ebdc-fbd5-44db-86e8-a055ac2865ad
+    type: start
+    task:
+      id: cf98ebdc-fbd5-44db-86e8-a055ac2865ad
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+      description: ''
+    nexttasks:
+      '#none#':
+      - "24"
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "1":
+    id: "1"
+    taskid: 666787d6-0357-4fdb-8f16-e00ab9caa109
+    type: regular
+    task:
+      id: 666787d6-0357-4fdb-8f16-e00ab9caa109
+      version: -1
+      name: Get List Of Brands
+      description: Gets a list of brands from FraudWatch service.
+      script: '|||fraudwatch-brands-list'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      limit: {}
+      page: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "2":
+    id: "2"
+    taskid: 88c063a9-4758-42d2-8844-92cb909ac553
+    type: condition
+    task:
+      id: 88c063a9-4758-42d2-8844-92cb909ac553
+      version: -1
+      name: Validate Brands List
+      description: Validate brands list command output.
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Brand.name
+            iscontext: true
+          right:
+            value:
+              simple: Testing Brand 1
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Brand.name
+            iscontext: true
+          right:
+            value:
+              simple: Testing Brand 2
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "3":
+    id: "3"
+    taskid: ede477cd-2bc3-4212-8928-e08e0e62f626
+    type: regular
+    task:
+      id: ede477cd-2bc3-4212-8928-e08e0e62f626
+      version: -1
+      name: Report An Incident To FraudWatch
+      description: Report an incident to FraudWatch service.
+      script: '|||fraudwatch-incident-report'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      brand:
+        simple: Testing Brand 1
+      evidence: {}
+      instructions: {}
+      primary_url:
+        simple: http://www.malicious.com
+      reference_id:
+        simple: abc123
+      type:
+        simple: vishing
+      urls:
+        simple: http://www.malicious2.com,http://www.malicious3.com
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "4":
+    id: "4"
+    taskid: 0a613ec1-d0ea-4cd5-80d5-351d557c295f
+    type: condition
+    task:
+      id: 0a613ec1-d0ea-4cd5-80d5-351d557c295f
+      version: -1
+      name: Validate Report Incident Outputs
+      description: Validate Report Incident command outputs.
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "5"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.reference_id
+            iscontext: true
+          right:
+            value:
+              simple: abc123
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.url
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious.com
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious2.com
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious3.com
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.type
+            iscontext: true
+          right:
+            value:
+              simple: Vishing
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.brand
+            iscontext: true
+          right:
+            value:
+              simple: Testing Brand 1
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "5":
+    id: "5"
+    taskid: 28f4f8f0-64b5-483f-8f8f-5c402df95d01
+    type: regular
+    task:
+      id: 28f4f8f0-64b5-483f-8f8f-5c402df95d01
+      version: -1
+      name: Add Additional URLs To Incident
+      description: Adds additional URLs to the incident associated to the given incident
+        ID. Fails if one of the urls given already exists.
+      script: '|||fraudwatch-incident-urls-add'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      incident_id:
+        simple: ${FraudWatch.Incident.identifier}
+      urls:
+        simple: http://www.malicious4.com,http://www.malicious5.com
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "6":
+    id: "6"
+    taskid: db82d572-4d21-4af0-80d7-1d5e4c34ef0d
+    type: condition
+    task:
+      id: db82d572-4d21-4af0-80d7-1d5e4c34ef0d
+      version: -1
+      name: Validate Add Additional URLs Outputs
+      description: Validate add additional URLs command output.
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "7"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.IncidentUrls.new_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious4.com
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.IncidentUrls.new_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious5.com
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1245
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "7":
+    id: "7"
+    taskid: 8fbaf15f-26f6-4b5c-8c52-157048c2b496
+    type: regular
+    task:
+      id: 8fbaf15f-26f6-4b5c-8c52-157048c2b496
+      version: -1
+      name: Add Message To Incident
+      description: Add a new message to be associated to the incident associated to
+        the given incident ID.
+      script: '|||fraudwatch-incident-messages-add'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "8"
+    scriptarguments:
+      incident_id:
+        complex:
+          root: FraudWatch.Incident
+          accessor: identifier
+      message_content:
+        simple: test
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1420
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "8":
+    id: "8"
+    taskid: f415c7fc-b746-41e5-821c-9ca89c5066ce
+    type: regular
+    task:
+      id: f415c7fc-b746-41e5-821c-9ca89c5066ce
+      version: -1
+      name: Get Incident Contact Emails
+      description: Provides contact emails for the incident associated to the given
+        incident ID.
+      script: '|||fraudwatch-incident-contact-emails-list'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "9"
+    scriptarguments:
+      incident_id:
+        complex:
+          root: FraudWatch.Incident
+          accessor: identifier
+      limit: {}
+      page: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1595
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "9":
+    id: "9"
+    taskid: 8c9c2e66-6a1c-49e0-884d-7cba20eccb93
+    type: condition
+    task:
+      id: 8c9c2e66-6a1c-49e0-884d-7cba20eccb93
+      version: -1
+      name: Validate New Message Added To Incident's Contact Emails
+      description: Validate message generated by command add messages is seen by the
+        emails returned from the contact email command
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "10"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsString
+          left:
+            value:
+              complex:
+                root: FraudWatch.IncidentContacts
+                accessor: content
+                transformers:
+                - operator: FirstArrayElement
+            iscontext: true
+          right:
+            value:
+              simple: test
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1770
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "10":
+    id: "10"
+    taskid: 8d11370e-f154-49de-8ea6-20b40a3857da
+    type: regular
+    task:
+      id: 8d11370e-f154-49de-8ea6-20b40a3857da
+      version: -1
+      name: Create File In Demisto
+      description: |
+        Will create a file (using the given data input or entry ID) and upload it to current investigation war room.
+      scriptName: FileCreateAndUpload
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "11"
+    scriptarguments:
+      data:
+        simple: This is the data of the attachment to be uploaded to FraudWatch incident
+      entryId: {}
+      filename:
+        simple: fraud_watch_test.txt
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1945
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "11":
+    id: "11"
+    taskid: dd41d0f9-b7ee-4f7f-8217-ce3f0754c8ed
+    type: regular
+    task:
+      id: dd41d0f9-b7ee-4f7f-8217-ce3f0754c8ed
+      version: -1
+      name: Upload File To Incident
+      description: Adds a new file attachment to the incident associated to the given
+        incident ID.
+      script: '|||fraudwatch-incident-attachment-upload'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "16"
+    scriptarguments:
+      attachment:
+        simple: ${File.EntryID}
+      incident_id:
+        simple: ${FraudWatch.Incident.identifier}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2120
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "12":
+    id: "12"
+    taskid: fdc46233-d217-4797-850e-4bc5c8268642
+    type: regular
+    task:
+      id: fdc46233-d217-4797-850e-4bc5c8268642
+      version: -1
+      name: Get Incidents List
+      description: Get list of incidents from FraudWatch service.
+      script: '|||fraudwatch-incidents-list'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "13"
+    scriptarguments:
+      brand:
+        simple: ${FraudWatch.Incident.brand}
+      from:
+        simple: ${FraudWatch.Incident.date_opened}
+      limit: {}
+      page: {}
+      status: {}
+      to: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2820
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "13":
+    id: "13"
+    taskid: 09e3dc00-cd5e-45ef-8c78-9c79242788eb
+    type: condition
+    task:
+      id: 09e3dc00-cd5e-45ef-8c78-9c79242788eb
+      version: -1
+      name: Validate Incidents List Contains Newly Created Incident
+      description: Validates newly created incident is returned by incidents list
+        command
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "17"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: FraudWatch.Incident.reference_id
+            iscontext: true
+          right:
+            value:
+              simple: abc1234
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2995
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "14":
+    id: "14"
+    taskid: 2c40bcc8-450f-4fea-8933-e9db14c254a9
+    type: regular
+    task:
+      id: 2c40bcc8-450f-4fea-8933-e9db14c254a9
+      version: -1
+      name: Get Incident By Incident ID
+      description: Gets an incident from FraudWatch service by its reference ID or
+        incident ID. Exactly one argument of 'reference_id' and 'incident_id' should
+        be given.
+      script: '|||fraudwatch-incident-get-by-identifier'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "15"
+    scriptarguments:
+      incident_id:
+        simple: ${FraudWatch.Incident.identifier}
+      reference_id: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2470
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "15":
+    id: "15"
+    taskid: 4def89c0-83c4-4d17-8958-3aee2db48c3f
+    type: regular
+    task:
+      id: 4def89c0-83c4-4d17-8958-3aee2db48c3f
+      version: -1
+      name: Delete Context
+      description: Delete field from context
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "12"
+    scriptarguments:
+      all:
+        simple: "no"
+      index: {}
+      key:
+        simple: FraudWatch
+      keysToKeep: {}
+      subplaybook: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2645
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "16":
+    id: "16"
+    taskid: 0c0c2b3a-7b39-4152-8496-c9e6e8dca223
+    type: regular
+    task:
+      id: 0c0c2b3a-7b39-4152-8496-c9e6e8dca223
+      version: -1
+      name: Update Incident
+      description: Updates the incident associated to the 'incident_id' with given
+        arguments values.
+      script: '|||fraudwatch-incident-update'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "14"
+    scriptarguments:
+      brand:
+        simple: Testing Brand 2
+      incident_id:
+        simple: ${FraudWatch.Incident.identifier}
+      instructions: {}
+      reference_id:
+        simple: abc1234
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2295
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "17":
+    id: "17"
+    taskid: f91d98f8-0f52-4050-8169-098587a4e0a4
+    type: regular
+    task:
+      id: f91d98f8-0f52-4050-8169-098587a4e0a4
+      version: -1
+      name: Delete Context
+      description: Delete field from context
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "18"
+    scriptarguments:
+      all:
+        simple: "no"
+      index: {}
+      key:
+        simple: FraudWatch
+      keysToKeep: {}
+      subplaybook: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3170
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "18":
+    id: "18"
+    taskid: bd9af32e-6536-417b-8802-f01190189bb7
+    type: regular
+    task:
+      id: bd9af32e-6536-417b-8802-f01190189bb7
+      version: -1
+      name: Get Incident By Reference ID
+      description: Gets an incident from FraudWatch service by its reference ID or
+        incident ID. Exactly one argument of 'reference_id' and 'incident_id' should
+        be given.
+      script: '|||fraudwatch-incident-get-by-identifier'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "19"
+    scriptarguments:
+      incident_id: {}
+      reference_id:
+        simple: abc1234
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3345
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "19":
+    id: "19"
+    taskid: cc362c6e-f77a-4b7b-8f6f-43ad56599cdb
+    type: condition
+    task:
+      id: cc362c6e-f77a-4b7b-8f6f-43ad56599cdb
+      version: -1
+      name: Validate Get Incident By Reference ID Outputs
+      description: Validate fields of the incident returned by get incident by identifier
+        is as expected
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "20"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.reference_id
+            iscontext: true
+          right:
+            value:
+              simple: abc1234
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.url
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious2.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious3.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious4.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.additional_urls
+            iscontext: true
+          right:
+            value:
+              simple: http://www.malicious5.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.brand
+            iscontext: true
+          right:
+            value:
+              simple: Testing Brand 2
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.Incident.type
+            iscontext: true
+          right:
+            value:
+              simple: Vishing
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3520
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "20":
+    id: "20"
+    taskid: bfeeec14-05e0-4179-8d81-6fd8bf3407b5
+    type: regular
+    task:
+      id: bfeeec14-05e0-4179-8d81-6fd8bf3407b5
+      version: -1
+      name: Get Incident Forensic Data
+      description: Gets forensic data of an incident associated to the given incident
+        ID.
+      script: '|||fraudwatch-incident-forensic-get'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "21"
+    scriptarguments:
+      incident_id:
+        simple: JJJ-397266
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3695
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "21":
+    id: "21"
+    taskid: 23340c61-c756-499a-85af-ea1bc8c80dfd
+    type: condition
+    task:
+      id: 23340c61-c756-499a-85af-ea1bc8c80dfd
+      version: -1
+      name: Validate Incident Forensic Data Outputs
+      description: Validate fields of the incident returned by get incident forensic
+        data is as expected
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "yes":
+      - "22"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.IncidentForensicData.host_nameservers
+            iscontext: true
+          right:
+            value:
+              simple: NS1.IRAN.COM
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.IncidentForensicData.host_nameservers
+            iscontext: true
+          right:
+            value:
+              simple: NS2.IRAN.COM
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.IncidentForensicData.host_domain_registrar.name
+            iscontext: true
+          right:
+            value:
+              simple: Moniker Online Services LLC
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.IncidentForensicData.host_domain_registrar.email
+            iscontext: true
+          right:
+            value:
+              simple: http://www.moniker.com
+      - - operator: isEqualString
+          left:
+            value:
+              simple: FraudWatch.IncidentForensicData.host_domain_registrar.country
+            iscontext: true
+          right:
+            value:
+              simple: abuse@moniker.com
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3870
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "22":
+    id: "22"
+    taskid: f9d638a4-8dcb-4665-896b-31a2e609fb10
+    type: title
+    task:
+      id: f9d638a4-8dcb-4665-896b-31a2e609fb10
+      version: -1
+      name: Playbook Done
+      type: title
+      iscommand: false
+      brand: ""
+      description: ''
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 4045
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+  "24":
+    id: "24"
+    taskid: b0d30f0f-6eba-440d-8606-0024cacad6f9
+    type: regular
+    task:
+      id: b0d30f0f-6eba-440d-8606-0024cacad6f9
+      version: -1
+      name: Delete Context
+      description: Delete field from context
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "no"
+      index: {}
+      key:
+        simple: FraudWatch
+      keysToKeep: {}
+      subplaybook: {}
+    separatecontext: false
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 4060,
+        "width": 380,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs: []
+tests:
+- No tests (auto formatted)
+fromversion: 5.0.0
+description: Test playbook for FraudWatch integration. This test playbook tests commands
+  of FraudWatch and validates outputs of the commands. This playbook is disabled because
+  integration was developed with the customer credentials.

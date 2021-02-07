@@ -357,6 +357,18 @@ script:
     - contextPath: FraudWatch.IncidentForensicData.host_domain_registrar.country
       description: Host domain registrar country.
       type: String
+    - contextPath: FraudWatch.IncidentForensicData.host_site_owner
+      description: Host site owner.
+      type: Unknown
+    - contextPath: FraudWatch.IncidentForensicData.host_site_admin
+      description: Host site admin.
+      type: Unknown
+    - contextPath: FraudWatch.IncidentForensicData.host_domain_admin
+      description: Host domain admin.
+      type: Unknown
+    - contextPath: FraudWatch.IncidentForensicData.host_ip_providier
+      description: Host IP prodvider.
+      type: Unknown
     - contextPath: FraudWatch.IncidentForensicData.identifier
       description: Identifier of the incident.
       type: String
