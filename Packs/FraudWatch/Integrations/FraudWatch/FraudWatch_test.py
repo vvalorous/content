@@ -3,13 +3,12 @@
 """
 import io
 import json
-from datetime import timezone, timedelta
 from typing import *
 
 import pytest
 import pytz
 
-from CommonServerPython import DemistoException, datetime, CommandResults, demisto
+from CommonServerPython import DemistoException, datetime, CommandResults
 from FraudWatch import get_and_validate_positive_int_argument, get_time_parameter, Client, \
     fraud_watch_incidents_list_command, fraud_watch_incident_get_by_identifier_command, \
     fraud_watch_incident_forensic_get_command, fraud_watch_incident_contact_emails_list_command, \
@@ -17,10 +16,6 @@ from FraudWatch import get_and_validate_positive_int_argument, get_time_paramete
     fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE
 
 FRAUD_WATCH_URL = f'http://{BASE_URL}'
-demisto.setIntegrationContext({
-    'bearer_token': 'api_key',
-    'valid_until': datetime.now(timezone.utc) + timedelta(days=7)
-})
 client = Client(
     api_key='api_key',
     base_url=FRAUD_WATCH_URL,
@@ -225,13 +220,7 @@ def test_commands_put_methods(requests_mock, command_function: Callable[[Client,
                            command_tests_data['fraudwatch-incident-urls-add']['args'],
                            command_tests_data['fraudwatch-incident-urls-add']['suffix'],
                            command_tests_data['fraudwatch-incident-urls-add']['response'],
-                           command_tests_data['fraudwatch-incident-urls-add']['expected']),
-
-                          # (fraud_watch_attachment_upload_command,
-                          #  command_tests_data['fraudwatch-incident-attachment-upload']['args'],
-                          #  command_tests_data['fraudwatch-incident-attachment-upload']['suffix'],
-                          #  command_tests_data['fraudwatch-incident-attachment-upload']['response'],
-                          #  command_tests_data['fraudwatch-incident-attachment-upload']['expected'])
+                           command_tests_data['fraudwatch-incident-urls-add']['expected'])
                           ])
 def test_commands_post_methods(requests_mock, command_function: Callable[[Client, Dict], CommandResults], args: Dict,
                                url_suffix: str, response: Dict, expected: Dict):

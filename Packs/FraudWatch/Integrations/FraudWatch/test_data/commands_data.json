@@ -267,10 +267,6 @@
       "outputs_prefix": "FraudWatch.IncidentForensicData",
       "outputs_key_field": "identifier",
       "outputs": {
-        "host_provider": {
-          "name": null,
-          "country": null
-        },
         "host_nameservers": [
           "malicous.com",
           "malicious2.com"
@@ -280,10 +276,6 @@
           "email": "http://www.services.com",
           "country": "abuse@services.com"
         },
-        "host_site_owner": [],
-        "host_site_admin": [],
-        "host_domain_admin": [],
-        "host_ip_providier": [],
         "identifier": "JJJ-124124"
       }
     },
