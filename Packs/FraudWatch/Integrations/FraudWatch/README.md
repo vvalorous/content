@@ -9,7 +9,6 @@ This integration was integrated and tested with version v1 of FraudWatch Phishpo
     | **Parameter** | **Description** | **Required** |
     | --- | --- | --- |
     | API Key | The API Key to use for connection | True |
-    | Protocol | The communication protocol. Possible values are: "http" and "https". | False |
     | Fetch incidents |  | False |
     | Incident type |  | False |
     | Incidents Fetch Interval |  | False |
@@ -38,8 +37,8 @@ Get list of incidents from FraudWatch service.
 | status | Retrieve incidents which corresponds to the given status. Possible values are: active, new, monitor, reactive, onhold, closed, closedmonitor, rejected, duplicate. | Optional | 
 | limit | Total number of Incidents in a page. Maximum number is 200. Default is 20. | Optional | 
 | page | Retrieve incidents by the given page number. | Optional | 
-| from | Retrieve alerts that their date opened day is higher or equal to 'from' value. Format is: yyyy-mm-dd. If 'to' argument is not given, default value for 'to' is current day. | Optional | 
-| to | Retrieve alerts that their date opened day is lower or equal to 'to' value. Format is: yyyy-mm-dd. If 'from' argument is not given, default value for 'from' is 12 months before 'to'. | Optional | 
+| from | Retrieve alerts that their date opened is higher or equal to 'from' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 days) formats. If 'to' argument is not given, default value for 'to' is current day. | Optional | 
+| to | Retrieve alerts that their date opened is lower or equal to 'to' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 days) formats. If 'from' argument is not given, default value for 'from' is 12 months before 'to'. | Optional | 
 
 
 #### Context Output
@@ -68,7 +67,7 @@ Get list of incidents from FraudWatch service.
 
 
 #### Command Example
-```!fraudwatch-incidents-list brand="Testing Brand 1" from="2020-12-12" limit=3 status=monitor```
+```!fraudwatch-incidents-list brand="Testing Brand 2" from="2020-12-12" limit=3 status=monitor```
 
 #### Context Example
 ```json
@@ -77,66 +76,78 @@ Get list of incidents from FraudWatch service.
         "Incident": [
             {
                 "active_duration": null,
-                "additional_urls": [],
-                "brand": "Testing Brand 1",
+                "additional_urls": [
+                    "http://www.malicious2.com",
+                    "http://www.malicious3.com",
+                    "http://www.malicious4.com",
+                    "http://www.malicious5.com"
+                ],
+                "brand": "Testing Brand 2",
                 "client": "Investec - Palo Alto",
                 "content_ip": null,
                 "created_by": "Client",
-                "current_duration": "173541",
+                "current_duration": "85882",
                 "date_closed": null,
-                "date_opened": "2021-02-02T16:36:53.000Z",
+                "date_opened": "2021-02-07T15:37:12.000Z",
                 "discovered_by": "client",
                 "host": null,
                 "host_country": null,
                 "host_timezone": null,
-                "identifier": "JJJ-313924",
-                "link": "http://www.phishportal.com/client/incident/JJJ-313924",
-                "reference_id": null,
+                "identifier": "JJJ-595483",
+                "link": "https://www.phishportal.com/client/incident/JJJ-595483",
+                "reference_id": "abc1234",
                 "status": "monitor",
                 "type": "Vishing",
-                "url": "test.com"
+                "url": "http://www.malicious.com"
             },
             {
                 "active_duration": null,
-                "additional_urls": [],
-                "brand": "Testing Brand 1",
+                "additional_urls": [
+                    "http://www.malicious2.com",
+                    "http://www.malicious3.com",
+                    "http://www.malicious4.com",
+                    "http://www.malicious5.com"
+                ],
+                "brand": "Testing Brand 2",
                 "client": "Investec - Palo Alto",
                 "content_ip": null,
                 "created_by": "Client",
-                "current_duration": "173544",
+                "current_duration": "86649",
                 "date_closed": null,
-                "date_opened": "2021-02-02T16:36:50.000Z",
+                "date_opened": "2021-02-07T15:24:25.000Z",
                 "discovered_by": "client",
                 "host": null,
                 "host_country": null,
                 "host_timezone": null,
-                "identifier": "JJJ-168840",
-                "link": "http://www.phishportal.com/client/incident/JJJ-168840",
-                "reference_id": null,
+                "identifier": "JJJ-992295",
+                "link": "https://www.phishportal.com/client/incident/JJJ-992295",
+                "reference_id": "abc1234",
                 "status": "monitor",
                 "type": "Vishing",
-                "url": "test.com"
+                "url": "http://www.malicious.com"
             },
             {
                 "active_duration": null,
-                "additional_urls": [],
-                "brand": "Testing Brand 1",
+                "additional_urls": [
+                    "abuse.com"
+                ],
+                "brand": "Testing Brand 2",
                 "client": "Investec - Palo Alto",
-                "content_ip": null,
+                "content_ip": "159.8.210.35",
                 "created_by": "Client",
-                "current_duration": "173545",
+                "current_duration": "340758",
                 "date_closed": null,
-                "date_opened": "2021-02-02T16:36:49.000Z",
+                "date_opened": "2021-02-04T16:49:16.000Z",
                 "discovered_by": "client",
                 "host": null,
                 "host_country": null,
                 "host_timezone": null,
-                "identifier": "JJJ-674271",
-                "link": "http://www.phishportal.com/client/incident/JJJ-674271",
-                "reference_id": null,
+                "identifier": "JJJ-302171",
+                "link": "https://www.phishportal.com/client/incident/JJJ-302171",
+                "reference_id": "malicious1",
                 "status": "monitor",
-                "type": "Vishing",
-                "url": "test.com"
+                "type": "Brand Abuse",
+                "url": "http://malicious.com"
             }
         ]
     }
@@ -146,11 +157,11 @@ Get list of incidents from FraudWatch service.
 #### Human Readable Output
 
 >### FraudWatch Incidents
->|identifier|url|status|type|brand|client|created_by|discovered_by|current_duration|date_opened|link|
->|---|---|---|---|---|---|---|---|---|---|---|
->| JJJ-313924 | test.com | monitor | Vishing | Testing Brand 1 | Investec - Palo Alto | Client | client | 173541 | 2021-02-02T16:36:53.000Z | http://www.phishportal.com/client/incident/JJJ-313924 |
->| JJJ-168840 | test.com | monitor | Vishing | Testing Brand 1 | Investec - Palo Alto | Client | client | 173544 | 2021-02-02T16:36:50.000Z | http://www.phishportal.com/client/incident/JJJ-168840 |
->| JJJ-674271 | test.com | monitor | Vishing | Testing Brand 1 | Investec - Palo Alto | Client | client | 173545 | 2021-02-02T16:36:49.000Z | http://www.phishportal.com/client/incident/JJJ-674271 |
+>|identifier|reference_id|url|status|type|brand|client|content_ip|created_by|discovered_by|current_duration|date_opened|additional_urls|link|
+>|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+>| JJJ-595483 | abc1234 | http://www.malicious.com | monitor | Vishing | Testing Brand 2 | Investec - Palo Alto |  | Client | client | 85882 | 2021-02-07T15:37:12.000Z | http://www.malicious2.com,<br/>http://www.malicious3.com,<br/>http://www.malicious4.com,<br/>http://www.malicious5.com | https://www.phishportal.com/client/incident/JJJ-595483 |
+>| JJJ-992295 | abc1234 | http://www.malicious.com | monitor | Vishing | Testing Brand 2 | Investec - Palo Alto |  | Client | client | 86649 | 2021-02-07T15:24:25.000Z | http://www.malicious2.com,<br/>http://www.malicious3.com,<br/>http://www.malicious4.com,<br/>http://www.malicious5.com | https://www.phishportal.com/client/incident/JJJ-992295 |
+>| JJJ-302171 | malicious1 | http://malicious.com | monitor | Brand Abuse | Testing Brand 2 | Investec - Palo Alto | 159.8.210.35 | Client | client | 340758 | 2021-02-04T16:49:16.000Z | abuse.com | https://www.phishportal.com/client/incident/JJJ-302171 |
 
 
 ### fraudwatch-incident-report
@@ -200,7 +211,7 @@ Report an incident to FraudWatch service.
 
 
 #### Command Example
-```!fraudwatch-incident-report brand="Testing Brand 2" primary_url="malicious.com" type=brand_abuse reference_id="malicious1" urls="abuse.com"```
+```!fraudwatch-incident-report brand="Testing Brand 1" primary_url="http://www.maliciousaddress.com" type="vishing" reference_id="abc123" urls="http://abuse.com"```
 
 #### Context Example
 ```json
@@ -209,25 +220,25 @@ Report an incident to FraudWatch service.
         "Incident": {
             "active_duration": null,
             "additional_urls": [
-                "abuse.com"
+                "http://abuse.com"
             ],
-            "brand": "Testing Brand 2",
+            "brand": "Testing Brand 1",
             "client": "Investec - Palo Alto",
             "content_ip": null,
             "created_by": "FraudWatch",
             "current_duration": "0",
             "date_closed": null,
-            "date_opened": "2021-02-04T16:49:16.000Z",
+            "date_opened": "2021-02-08T15:28:37.000Z",
             "discovered_by": "client",
             "host": null,
             "host_country": null,
             "host_timezone": null,
-            "identifier": "JJJ-302171",
-            "link": "http://www.phishportal.com/client/incident/JJJ-302171",
-            "reference_id": "malicious1",
+            "identifier": "JJJ-358877",
+            "link": "https://www.phishportal.com/client/incident/JJJ-358877",
+            "reference_id": "abc123",
             "status": "monitor",
-            "type": "Brand Abuse",
-            "url": "malicious.com"
+            "type": "Vishing",
+            "url": "http://www.maliciousaddress.com"
         }
     }
 }
@@ -238,7 +249,7 @@ Report an incident to FraudWatch service.
 >### Created FraudWatch Incident
 >|additional_urls|brand|client|created_by|current_duration|date_opened|discovered_by|identifier|link|reference_id|status|type|url|
 >|---|---|---|---|---|---|---|---|---|---|---|---|---|
->| abuse.com | Testing Brand 2 | Investec - Palo Alto | FraudWatch | 0 | 2021-02-04T16:49:16.000Z | client | JJJ-302171 | http://www.phishportal.com/client/incident/JJJ-302171 | malicious1 | monitor | Brand Abuse | malicious.com |
+>| http://abuse.com | Testing Brand 1 | Investec - Palo Alto | FraudWatch | 0 | 2021-02-08T15:28:37.000Z | client | JJJ-358877 | https://www.phishportal.com/client/incident/JJJ-358877 | abc123 | monitor | Vishing | http://www.maliciousaddress.com |
 
 
 ### fraudwatch-incident-update
@@ -256,6 +267,7 @@ Updates the incident associated to the 'incident_id' with given arguments values
 | incident_id | The ID of the incident to be updated. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'. | Required | 
 | brand | Updates the incident associated to the 'incident_id' with brand given. | Optional | 
 | reference_id | Updates the incident associated to the 'incident_id' with reference ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier' to retrieve specific incident's details by its reference id. | Optional | 
+| evidence | Evidence to be added (such as logs, etc...) to the reported incident. | Optional | 
 | instructions | Updates the incident associated to the 'incident_id' with additional instructions for FraudWatch Security Team. | Optional | 
 
 
@@ -320,12 +332,15 @@ Gets an incident from FraudWatch service by its reference ID or incident ID. Exa
     "FraudWatch": {
         "Incident": {
             "active_duration": null,
-            "additional_urls": [],
+            "additional_urls": [
+                "http://malicious1.com",
+                "http://malicious2.com"
+            ],
             "brand": "Testing Brand 1",
             "client": "Investec - Palo Alto",
             "content_ip": null,
             "created_by": "Client",
-            "current_duration": "173551",
+            "current_duration": "514313",
             "date_closed": null,
             "date_opened": "2021-02-02T16:36:50.000Z",
             "discovered_by": "client",
@@ -333,7 +348,7 @@ Gets an incident from FraudWatch service by its reference ID or incident ID. Exa
             "host_country": null,
             "host_timezone": null,
             "identifier": "JJJ-168840",
-            "link": "http://www.phishportal.com/client/incident/JJJ-168840",
+            "link": "https://www.phishportal.com/client/incident/JJJ-168840",
             "reference_id": null,
             "status": "monitor",
             "type": "Vishing",
@@ -346,9 +361,9 @@ Gets an incident from FraudWatch service by its reference ID or incident ID. Exa
 #### Human Readable Output
 
 >### FraudWatch Incident
->|brand|client|created_by|current_duration|date_opened|discovered_by|identifier|link|status|type|url|
->|---|---|---|---|---|---|---|---|---|---|---|
->| Testing Brand 1 | Investec - Palo Alto | Client | 173551 | 2021-02-02T16:36:50.000Z | client | JJJ-168840 | http://www.phishportal.com/client/incident/JJJ-168840 | monitor | Vishing | test.com |
+>|additional_urls|brand|client|created_by|current_duration|date_opened|discovered_by|identifier|link|status|type|url|
+>|---|---|---|---|---|---|---|---|---|---|---|---|
+>| http://malicious1.com,<br/>http://malicious2.com | Testing Brand 1 | Investec - Palo Alto | Client | 514313 | 2021-02-02T16:36:50.000Z | client | JJJ-168840 | https://www.phishportal.com/client/incident/JJJ-168840 | monitor | Vishing | test.com |
 
 
 ### fraudwatch-incident-forensic-get
@@ -376,6 +391,10 @@ Gets forensic data of an incident associated to the given incident ID.
 | FraudWatch.IncidentForensicData.host_domain_registrar.name | String | Host domain registrar name. | 
 | FraudWatch.IncidentForensicData.host_domain_registrar.email | String | Host domain registrar email. | 
 | FraudWatch.IncidentForensicData.host_domain_registrar.country | String | Host domain registrar country. | 
+| FraudWatch.IncidentForensicData.host_site_owner | Unknown | Host site owner. | 
+| FraudWatch.IncidentForensicData.host_site_admin | Unknown | Host site admin. | 
+| FraudWatch.IncidentForensicData.host_domain_admin | Unknown | Host domain admin. | 
+| FraudWatch.IncidentForensicData.host_ip_providier | Unknown | Host IP provider. | 
 | FraudWatch.IncidentForensicData.identifier | String | Identifier of the incident. | 
 
 
@@ -387,23 +406,15 @@ Gets forensic data of an incident associated to the given incident ID.
 {
     "FraudWatch": {
         "IncidentForensicData": {
-            "host_domain_admin": [],
             "host_domain_registrar": {
                 "country": "abuse@moniker.com",
                 "email": "http://www.moniker.com",
                 "name": "Moniker Online Services LLC"
             },
-            "host_ip_providier": [],
             "host_nameservers": [
                 "NS1.IRAN.COM",
                 "NS2.IRAN.COM"
             ],
-            "host_provider": {
-                "country": null,
-                "name": null
-            },
-            "host_site_admin": [],
-            "host_site_owner": [],
             "identifier": "JJJ-397266"
         }
     }
@@ -413,9 +424,9 @@ Gets forensic data of an incident associated to the given incident ID.
 #### Human Readable Output
 
 >### FraudWatch Incident Forensic Data
->|host_domain_registrar|host_nameservers|host_provider|identifier|
->|---|---|---|---|
->| name: Moniker Online Services LLC<br/>email: http://www.moniker.com<br/>country: abuse@moniker.com | NS1.IRAN.COM,<br/>NS2.IRAN.COM | name: null<br/>country: null | JJJ-397266 |
+>|host_domain_registrar|host_nameservers|identifier|
+>|---|---|---|
+>| name: Moniker Online Services LLC<br/>email: http://www.moniker.com<br/>country: abuse@moniker.com | NS1.IRAN.COM,<br/>NS2.IRAN.COM | JJJ-397266 |
 
 
 ### fraudwatch-incident-contact-emails-list
@@ -457,16 +468,16 @@ Provides contact emails for the incident associated to the given incident ID.
             {
                 "content": "This incident is very malicious, please monitor it\r\n",
                 "creator": "Client",
-                "date": "2021-02-04T16:43:11.000Z",
-                "noteId": "11052619",
+                "date": "2021-02-08T15:26:19.000Z",
+                "noteId": "11081853",
                 "subject": "Client Reply"
             },
             {
-                "content": "Dear Investec - Palo Alto\r\n\r\nA new Vishing incident has been created with the following details:\r\n\r\nContent: test .com\r\nBrand Targeted: Testing Brand 1\r\nOur Reference: Incident#JJJ-898410 \r\n\r\n\r\n*********************************************\r\n*************** IMPORTANT ****************\r\n*********************************************\r\nThis incident is only being monitored.\r\n\r\nTo request a Take Down, please log in, or reply to this email clearly requesting a Take Down.\r\n*********************************************\r\n\r\nYou can view details of this incident by logging into PhishPortal (https://www.phishportal.com).\r\n\r\nRegards,\r\nSecurity Operations\r\nFraudWatch International\r\nTel USA: +1-415-449-8800 Ext 200\r\nTel AUS: +613 9887 6777\r\nFax: +613 8660 2688\r\nEmail: security@fraudwatchinternational.com\r\nhttp://www.fraudwatchinternational.com\r\n",
-                "creator": "FraudWatch",
-                "date": "2021-02-02T14:26:35.000Z",
-                "noteId": "11027360",
-                "subject": "Outgoing email recorded"
+                "content": "This incident is very malicious, please monitor it\r\n",
+                "creator": "Client",
+                "date": "2021-02-08T15:21:58.000Z",
+                "noteId": "11081828",
+                "subject": "Client Reply"
             }
         ]
     }
@@ -478,8 +489,8 @@ Provides contact emails for the incident associated to the given incident ID.
 >### FraudWatch Incident Contacts Data
 >|noteId|subject|creator|content|date|
 >|---|---|---|---|---|
->| 11052619 | Client Reply | Client | This incident is very malicious, please monitor it<br/> | 2021-02-04T16:43:11.000Z |
->| 11027360 | Outgoing email recorded | FraudWatch | Dear Investec - Palo Alto<br/><br/>A new Vishing incident has been created with the following details:<br/><br/>Content: test .com<br/>Brand Targeted: Testing Brand 1<br/>Our Reference: Incident#JJJ-898410 <br/><br/><br/>*********************************************<br/>*************** IMPORTANT ****************<br/>*********************************************<br/>This incident is only being monitored.<br/><br/>To request a Take Down, please log in, or reply to this email clearly requesting a Take Down.<br/>*********************************************<br/><br/>You can view details of this incident by logging into PhishPortal (https://www.phishportal.com).<br/><br/>Regards,<br/>Security Operations<br/>FraudWatch International<br/>Tel USA: +1-415-449-8800 Ext 200<br/>Tel AUS: +613 9887 6777<br/>Fax: +613 8660 2688<br/>Email: security@fraudwatchinternational.com<br/>http://www.fraudwatchinternational.com<br/> | 2021-02-02T14:26:35.000Z |
+>| 11081853 | Client Reply | Client | This incident is very malicious, please monitor it<br/> | 2021-02-08T15:26:19.000Z |
+>| 11081828 | Client Reply | Client | This incident is very malicious, please monitor it<br/> | 2021-02-08T15:21:58.000Z |
 
 
 ### fraudwatch-incident-messages-add
@@ -534,7 +545,7 @@ Adds additional URLs to the incident associated to the given incident ID. Fails 
 
 
 #### Command Example
-```!fraudwatch-incident-urls-add incident_id=JJJ-674271 urls=malicious1.com,malicious2.com```
+```!fraudwatch-incident-urls-add incident_id=JJJ-162968 urls=http://www.malicious1.com,http://www.malicious2.com```
 
 #### Context Example
 ```json
@@ -542,8 +553,8 @@ Adds additional URLs to the incident associated to the given incident ID. Fails 
     "FraudWatch": {
         "IncidentUrls": {
             "new_urls": [
-                "http://malicious1.com",
-                "http://malicious2.com"
+                "http://www.malicious1.com",
+                "http://www.malicious2.com"
             ],
             "success": "Add additional urls successfully"
         }
@@ -556,7 +567,7 @@ Adds additional URLs to the incident associated to the given incident ID. Fails 
 >### FraudWatch Incident Urls
 >|new_urls|success|
 >|---|---|
->| http://malicious1.com,<br/>http://malicious2.com | Add additional urls successfully |
+>| http://www.malicious1.com,<br/>http://www.malicious2.com | Add additional urls successfully |
 
 
 ### fraudwatch-incident-attachment-upload
@@ -572,7 +583,7 @@ Adds a new file attachment to the incident associated to the given incident ID.
 | **Argument Name** | **Description** | **Required** |
 | --- | --- | --- |
 | incident_id | The ID of the incident to add a file attachment to. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'. | Required | 
-| attachment | Entry id in Demisto of the attachment to be added to the incident. | Required | 
+| entry_id | Entry id in Demisto of the attachment to be added to the incident. | Required | 
 
 
 #### Context Output
@@ -580,11 +591,11 @@ Adds a new file attachment to the incident associated to the given incident ID.
 There is no context output for this command.
 
 #### Command Example
-```!fraudwatch-incident-attachment-upload attachment=zPXrMZSsNhH5g6rrxBLkhA@ea874720-782f-4095-8d76-595e9c41f3ce incident_id=JJJ-604206```
+```!fraudwatch-incident-attachment-upload entry_id=fmSNZSY2fSCA2WptU8rddf@d382f488-92db-400c-87ff-fdd71f3b7408 incident_id=JJJ-604206```
 
 #### Human Readable Output
 
->### File entry zPXrMZSsNhH5g6rrxBLkhA@ea874720-782f-4095-8d76-595e9c41f3ce was uploaded successfully to incident with incident id JJJ-604206
+>### File fraud_test.txt was uploaded successfully to incident with an incident id JJJ-604206
 
 ### fraudwatch-brands-list
 ***
@@ -598,7 +609,7 @@ Gets a list of brands from FraudWatch service.
 
 | **Argument Name** | **Description** | **Required** |
 | --- | --- | --- |
-| limit | Total number of brands in a page. Maximum number is 100. Default is 20. | Optional | 
+| limit | Total number of brands in a page. Maximum number is 100, minimum number is 20. Default is 20. | Optional | 
 | page | Retrieve brands by the given page number. | Optional | 
 
 

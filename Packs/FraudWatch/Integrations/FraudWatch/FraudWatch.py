@@ -9,7 +9,7 @@ urllib3.disable_warnings()
 
 ''' CONSTANTS '''
 MINIMUM_POSITIVE_VALUE = 1
-BASE_URL = 'www.phishportal.com/v1/'
+BASE_URL = 'https://www.phishportal.com/v1/'
 
 FRAUD_WATCH_DATE_FORMAT = '%Y-%m-%d'
 
@@ -36,6 +36,18 @@ class Client(BaseClient):
         }
         super().__init__(base_url=base_url, verify=verify, proxy=proxy, headers=self.base_headers)
 
+    def http_request(self, method: str, url_suffix: str, params: Optional[Dict] = None, data: Optional[Dict] = None,
+                     headers: Optional[Dict] = None, files: Optional[Dict] = None):
+        return self._http_request(
+            method=method,
+            url_suffix=url_suffix,
+            params=params,
+            data=data,
+            headers=headers,
+            files=files,
+            error_handler=fraud_watch_error_handler
+        )
+
     # def get_bearer_token(self):
     #     """
     #     Login using the credentials and store the cookie
@@ -50,7 +62,7 @@ class Client(BaseClient):
     #             # Bearer Token is still valid - did not expire yet
     #             return bearer_token
     #
-    #     response = self._http_request(method='POST', url_suffix='token/refresh')
+    #     response = self.http_request(method='POST', url_suffix='token/refresh')
     #     bearer_token = response.get('token')
     #     expiration_time = response.get('expiry')
     #
@@ -77,7 +89,7 @@ class Client(BaseClient):
         if to_date:
             params['to'] = to_date
 
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix='incidents',
             params=params
@@ -86,7 +98,7 @@ class Client(BaseClient):
     def fraud_watch_incident_report(self, brand: str, incident_type: Optional[str], reference_id: Optional[str],
                                     primary_url: str, urls: Optional[List[str]], evidence: Optional[str],
                                     instructions: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix='incidents',
             data=assign_params(
@@ -102,39 +114,40 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_update(self, incident_id: Optional[str], brand: Optional[str], reference_id: Optional[str],
-                                    instructions: Optional[str]):
-        return self._http_request(
+                                    evidence: Optional[str], instructions: Optional[str]):
+        return self.http_request(
             method='PUT',
             url_suffix=f'incident/{incident_id}',
             data=assign_params(
                 brand=brand,
                 reference_id=reference_id,
+                evidence=evidence,
                 instructions=instructions
             ),
             headers={**self.base_headers, **self.URL_ENCODED_HEADER}
         )
 
     def fraud_watch_incident_list_by_id(self, incident_id: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}'
         )
 
     def fraud_watch_incident_get_by_reference(self, reference_id: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix=f'incident/reference/{reference_id}'
         )
 
     def fraud_watch_incident_forensic_get(self, incident_id: Optional[str]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/forensic'
         )
 
     def fraud_watch_incident_contact_emails_list(self, incident_id: Optional[str], page: Optional[int],
                                                  limit: Optional[int]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix=f'incident/{incident_id}/message',
             params=assign_params(
@@ -144,7 +157,7 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_messages_add(self, incident_id: Optional[str], message_content: Any):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/message/add',
             data=message_content,
@@ -152,7 +165,7 @@ class Client(BaseClient):
         )
 
     def fraud_watch_incident_urls_add(self, incident_id: Optional[str], urls: Dict[str, List[str]]):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/urls/add',
             data=urls,
@@ -160,14 +173,14 @@ class Client(BaseClient):
         )
 
     def fraud_watch_attachment_upload_command(self, incident_id: Optional[str], file: Any):
-        return self._http_request(
+        return self.http_request(
             method='POST',
             url_suffix=f'incident/{incident_id}/upload',
             files=file
         )
 
     def fraud_watch_brands_list(self, page: Optional[int], limit: Optional[int]):
-        return self._http_request(
+        return self.http_request(
             method='GET',
             url_suffix='account/brands',
             params=assign_params(
@@ -178,6 +191,49 @@ class Client(BaseClient):
 
 
 ''' HELPER FUNCTIONS '''
+
+
+def fraud_watch_error_handler(res: Any):
+    err_msg = 'Error in API call [{}] - {}' \
+        .format(res.status_code, res.reason)
+    try:
+        # Try to parse json error response
+        error_entry = res.json()
+        message = error_entry.get('message', '')
+        errors = error_entry.get('errors', '')
+        fraud_watch_error_reason = f'{message}: {errors}'
+        if not fraud_watch_error_reason:
+            err_msg += '\n{}'.format(json.dumps(error_entry))
+        else:
+            err_msg += f'\n{fraud_watch_error_reason}'
+        raise DemistoException(err_msg, res=res)
+    except ValueError:
+        err_msg += '\n{}'.format(res.text)
+        raise DemistoException(err_msg, res=res)
+
+
+def get_optional_time_parameter_as_fraud_watch_date_format(arg: Optional[str]) -> Optional[str]:
+    """
+    Receives arg, expects that the time argument will be either:
+    - Iso time.
+    - Time Range.
+    Args:
+        arg (str): The argument to turn into FraudWatch date format.
+
+    Returns:
+        - If 'arg' is None, returns None.
+        - If 'arg' exists and is epoch time or iso time, returns string representing the date format expected
+          by FraudWatch service.
+        - If 'arg' exists and is not time range or iso, throws DemistoException exception.
+
+    """
+    maybe_unaware_date = arg_to_datetime(arg, is_utc=True)
+    if not maybe_unaware_date:
+        return None
+
+    aware_time_date = maybe_unaware_date if maybe_unaware_date.tzinfo else UTC_TIMEZONE.localize(
+        maybe_unaware_date)
+    return aware_time_date.strftime('%Y-%m-%d')
 
 
 def get_and_validate_positive_int_argument(args: Dict, argument_name: str) -> Optional[int]:
@@ -345,8 +401,8 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     status = args.get('status')
     page = get_and_validate_positive_int_argument(args, 'page')
     limit = get_and_validate_positive_int_argument(args, 'limit', )
-    from_date = args.get('from')
-    to_date = args.get('to')
+    from_date = get_optional_time_parameter_as_fraud_watch_date_format(args.get('from'))
+    to_date = get_optional_time_parameter_as_fraud_watch_date_format(args.get('to'))
     if from_date and not to_date:
         to_date = datetime.now(timezone.utc).strftime(FRAUD_WATCH_DATE_FORMAT)
 
@@ -411,7 +467,7 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     raw_response = client.fraud_watch_incident_report(brand, incident_type, reference_id, primary_url, urls,
                                                       evidence, instructions)
 
-    CommandResults(
+    return CommandResults(
         outputs_prefix='FraudWatch.Incident',
         outputs=raw_response,
         outputs_key_field='identifier',
@@ -447,12 +503,13 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     incident_id = args.get('incident_id')
     brand = args.get('brand')
     reference_id = args.get('reference_id')
+    evidence = args.get('evidence')
     instructions = args.get('instructions')
 
-    if all(argument is None for argument in [brand, reference_id, instructions]):
+    if all(argument is None for argument in [brand, reference_id, evidence, instructions]):
         raise DemistoException(f'No data was given to update for incident id: {incident_id}')
 
-    raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
+    raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, evidence, instructions)
 
     return CommandResults(
         raw_response=raw_response,
@@ -519,23 +576,17 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     incident_id = args.get('incident_id')
 
     raw_response = client.fraud_watch_incident_forensic_get(incident_id)
-
     outputs = remove_empty_elements(raw_response)
-
     if outputs:
-        human_readable = tableToMarkdown("FraudWatch Incident Forensic Data", outputs,
-                                         removeNull=True)
-    else:
-        human_readable = f'### Incident id {incident_id} has empty forensic data'
-
-    outputs['identifier'] = incident_id
+        outputs['identifier'] = incident_id
 
     return CommandResults(
         outputs_prefix='FraudWatch.IncidentForensicData',
         outputs=outputs,
         outputs_key_field='identifier',
         raw_response=raw_response,
-        readable_output=human_readable
+        readable_output=tableToMarkdown("FraudWatch Incident Forensic Data", outputs,
+                                         removeNull=True)
     )
 
 
@@ -661,7 +712,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
         CommandResults.
     """
     incident_id = args.get('incident_id')
-    entry_id = args.get('attachment')
+    entry_id = args.get('entry_id')
 
     try:
         # entry id of uploaded file to war room
@@ -679,8 +730,8 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     return CommandResults(
         raw_response=raw_response,
         # change to name and not entry ID
-        readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
-                        f'{incident_id}'
+        readable_output=f'''### File {file_info['name']} was uploaded successfully to incident with '''
+                        f'an incident id {incident_id}'
     )
 
 
@@ -726,14 +777,13 @@ def main() -> None:
     verify_certificate = not params.get('insecure', False)
     proxy = params.get('proxy', False)
     api_key = params.get('api_key')
-    protocol = params.get('protocol', 'https')
 
     demisto.debug(f'Command being called is {command}')
     try:
 
         client = Client(
             api_key=api_key,
-            base_url=f'{protocol}://{BASE_URL}',
+            base_url=BASE_URL,
             verify=verify_certificate,
             proxy=proxy)
 

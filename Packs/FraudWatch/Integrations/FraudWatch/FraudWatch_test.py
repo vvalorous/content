@@ -13,12 +13,13 @@ from FraudWatch import get_and_validate_positive_int_argument, get_time_paramete
     fraud_watch_incidents_list_command, fraud_watch_incident_get_by_identifier_command, \
     fraud_watch_incident_forensic_get_command, fraud_watch_incident_contact_emails_list_command, \
     fraud_watch_brands_list_command, fraud_watch_incident_report_command, fraud_watch_incident_update_command, \
-    fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE
+    fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE, \
+    get_optional_time_parameter_as_fraud_watch_date_format
 
-FRAUD_WATCH_URL = f'http://{BASE_URL}'
+
 client = Client(
     api_key='api_key',
-    base_url=FRAUD_WATCH_URL,
+    base_url=BASE_URL,
     verify=False,
     proxy=False
 )
@@ -30,6 +31,26 @@ def util_load_json(path):
 
 
 command_tests_data = util_load_json('test_data/commands_data.json')
+
+
+@pytest.mark.parametrize('arg, expected',
+                         [(None, None), ('2020-12-12', '2020-12-12'), ('2020-12-12T10:11:22', '2020-12-12')])
+def test_get_optional_time_parameter_as_fraud_watch_date_format(arg, expected):
+    """
+    Given:
+     - Argument value to transform into FraudWatch date format.
+
+    When:
+     - Case a: Argument does not exist.
+     - Case b: Argument exist and has ISO format.
+     - Case c: Argument exist and has ISO format.
+
+    Then:
+     - Case a: Ensure that None is returned.
+     - Case b: Ensure that correct FraudWatch format is returned.
+     - Case c: Ensure that correct FraudWatch format is returned.
+    """
+    assert get_optional_time_parameter_as_fraud_watch_date_format(arg) == expected
 
 
 @pytest.mark.parametrize('args, argument_name, expected',
@@ -148,7 +169,7 @@ def test_commands_get_methods(requests_mock, command_function: Callable[[Client,
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.get(
-        f'{FRAUD_WATCH_URL}{url_suffix}',
+        f'{BASE_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(
@@ -188,7 +209,7 @@ def test_commands_put_methods(requests_mock, command_function: Callable[[Client,
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.put(
-        f'{FRAUD_WATCH_URL}{url_suffix}',
+        f'{BASE_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(
@@ -239,7 +260,7 @@ def test_commands_post_methods(requests_mock, command_function: Callable[[Client
      - Ensure that the expected CommandResults object is returned by the command function.
     """
     requests_mock.post(
-        f'{FRAUD_WATCH_URL}{url_suffix}',
+        f'{BASE_URL}{url_suffix}',
         json=response
     )
     expected_command_results = CommandResults(

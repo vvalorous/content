@@ -8,15 +8,6 @@ configuration:
   name: api_key
   required: true
   type: 4
-- additionalinfo: 'The communication protocol. Possible values are: "http" and "https".'
-  display: Protocol
-  name: protocol
-  options:
-  - http
-  - https
-  required: false
-  type: 15
-  defaultvalue: "https"
 - display: Fetch incidents
   name: isFetch
   required: false
@@ -76,13 +67,13 @@ script:
       defaultValue: '20'
     - description: Retrieve incidents by the given page number.
       name: page
-    - description: "Retrieve alerts that their date opened day is higher or equal
-         to 'from' value. Format is: yyyy-mm-dd. If 'to' argument is not given, default
-         value for 'to' is current day."
+    - description: "Retrieve alerts that their date opened is higher or equal
+         to 'from' value. Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
+          If 'to' argument is not given, default value for 'to' is current day."
       name: from
-    - description: "Retrieve alerts that their date opened day is lower or equal to
-         'to' value. Format is: yyyy-mm-dd. If 'from' argument is not given, default
-         value for 'from' is 12 months before 'to'."
+    - description: "Retrieve alerts that their date opened is lower or equal to
+         'to' value. Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
+          If 'from' argument is not given, default value for 'from' is 12 months before 'to'."
       name: to
     description: Get list of incidents from FraudWatch service.
     name: fraudwatch-incidents-list
@@ -254,6 +245,8 @@ script:
         ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier'
         to retrieve specific incident's details by its reference id.
       name: reference_id
+    - description: Evidence to be added (such as logs, etc...) to the reported incident.
+      name: evidence
     - description: Updates the incident associated to the 'incident_id' with additional
         instructions for FraudWatch Security Team.
       name: instructions
@@ -367,7 +360,7 @@ script:
       description: Host domain admin.
       type: Unknown
     - contextPath: FraudWatch.IncidentForensicData.host_ip_providier
-      description: Host IP prodvider.
+      description: Host IP provider.
       type: Unknown
     - contextPath: FraudWatch.IncidentForensicData.identifier
       description: Identifier of the incident.
@@ -437,13 +430,13 @@ script:
       name: incident_id
       required: true
     - description: Entry id in Demisto of the attachment to be added to the incident.
-      name: attachment
+      name: entry_id
       required: true
     description: Adds a new file attachment to the incident associated to the given
       incident ID.
     name: fraudwatch-incident-attachment-upload
   - arguments:
-    - description: Total number of brands in a page. Maximum number is 100.
+    - description: Total number of brands in a page. Maximum number is 100, minimum number is 20.
       name: limit
       defaultValue: '20'
     - description: Retrieve brands by the given page number.
