@@ -2,6 +2,7 @@ from copy import deepcopy
 import pytest
 import SplunkPy as splunk
 import demistomock as demisto
+
 RETURN_ERROR_TARGET = 'SplunkPy.return_error'
 
 DICT_RAW_RESPONSE = '"1528755951, search_name="NG_SIEM_UC25- High number of hits against ' \
@@ -17,7 +18,6 @@ LIST_RAW = 'Feb 13 09:02:55 1,2020/02/13 09:02:55,001606001116,THREAT,url,' \
            'ethernet1/2,ethernet1/1,forwardAll,2020/02/13 09:02:55,59460,1,62889,80,0,0,0x208000,tcp,alert,' \
            '"ushship.com/xed/config.bin",(9999),not-resolved,informational,client-to-server,' \
            '0,0x0,1.1.22.22-5.6.7.8,United States,0,text/html'
-
 
 RAW_WITH_MESSAGE = '{"@timestamp":"2019-10-15T13:30:08.578-04:00","message":"{"TimeStamp":"2019-10-15 13:30:08",' \
                    '"CATEGORY_1":"CONTACT","ASSOCIATEOID":"G2N2TJETBRAAX68V","HOST":' \
@@ -155,7 +155,6 @@ POSITIVE = {
     "NAS-Port-Id": "GigabitEthernet2/0/05",
     "NAS-Port-Type": "Ethernet"
 }
-
 
 # testing the ValueError and json sections
 RAW_JSON = '{"Test": "success"}'
@@ -454,7 +453,6 @@ SPLUNK_RESULTS = [
     }
 ]
 
-
 EXPECTED_OUTPUT = {
     'This is the alert type': {
         "source": "This is the alert type",
@@ -468,3 +466,22 @@ EXPECTED_OUTPUT = {
 def test_create_mapping_dict():
     mapping_dict = splunk.create_mapping_dict(SPLUNK_RESULTS, type_field='source')
     assert mapping_dict == EXPECTED_OUTPUT
+
+
+""" ========== Mirroring Mechanism Tests ========== """
+
+
+@pytest.mark.parametrize('last_update, demisto_params, splunk_time_timestamp', [
+    ('2021-02-09T16:41:30.589575+02:00', {'timezone': '0'}, 1612874490),
+    ('2021-02-09T16:41:30.589575+02:00', {'timezone': '+120'}, 1612881690),
+    ('2021-02-09T16:41:30.589575+02:00', {}, '')
+])
+def test_get_last_update_in_splunk_time(last_update, demisto_params, splunk_time_timestamp, mocker):
+    mocker.patch.object(demisto, 'params', return_value=demisto_params)
+    if demisto_params:
+        assert splunk.get_last_update_in_splunk_time(last_update) == splunk_time_timestamp
+    else:
+        error_msg = 'Cannot mirror incidents when timezone is not configured. Please enter the '
+        'timezone of the Splunk server being used in the integration configuration.'
+        with pytest.raises(Exception, match=error_msg):
+            splunk.get_last_update_in_splunk_time(last_update)
