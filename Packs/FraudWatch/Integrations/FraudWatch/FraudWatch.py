@@ -38,6 +38,20 @@ class Client(BaseClient):
 
     def http_request(self, method: str, url_suffix: str, params: Optional[Dict] = None, data: Optional[Dict] = None,
                      headers: Optional[Dict] = None, files: Optional[Dict] = None):
+        """
+        Wrapper for Base Client http request. Uses error handler to catch errors returned by FraudWatch and returning
+        an exception with more precise description for the exception
+        Args:
+            method (str): The HTTP method to perform ('POST', 'GET', 'PUT').
+            url_suffix (str): The url suffix of the API call.
+            params (Optional[Dict]): Additional query params to be sent.
+            data (Optional[Dict]): Additional data to be sent.
+            headers (Optional[Dict]): Additional headers to be sent.
+            files (Optional[Dict]): Additional files to be sent
+
+        Returns:
+            The HTTP response, or exception if exception occurred.
+        """
         return self._http_request(
             method=method,
             url_suffix=url_suffix,
@@ -349,8 +363,7 @@ def fetch_incidents_command(client: Client, params: Dict):
 
 def test_module(client: Client, params: Dict) -> str:
     """
-    Tests API connectivity and authentication'
-
+    Tests API connectivity and authentication.
     Returning 'ok' indicates that the integration works like it is supposed to.
     Connection to the service is successful.
     Raises exceptions if something goes wrong.
@@ -380,13 +393,14 @@ def fraud_watch_incidents_list_command(client: Client, args: Dict) -> CommandRes
     - Status: Retrieve incidents which corresponds to the given status. Unknown status will return empty incident list.
     - Limit: Total number of Incidents in a page. The default limit is 20 and the maximum number is 200.
     - Page: Retrieve incidents by the given page number.
-    - From Date: Retrieve only alerts that their date_opened is higher than 'From Date' value. has format of yyyy-mm-dd.
-        - If 'To Date' argument is not given, and 'From Date' was given, we set 'To Date' to current time.
-    - To Date: Retrieve only alerts that their date_opened is lower than 'To Date' value. has format of yyyy-mm-dd.
-        - If 'From Date' argument is not given, and 'To Date' was given, 'From Date' default to 12 months before
-          'To Date' by FraudWatch service.
+    - From Date: Retrieve alerts that their date opened is higher or equal to 'from' value.
+                 Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
+                 If 'to' argument is not given, default value for 'to' is current day.
+    - To Date: Retrieve alerts that their date opened is lower or equal to 'to' value.
+               Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
+               If 'from' argument is not given, default value for 'from' is 12 months before 'to'.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown brand.
     - Invalid 'to_date' or 'from_date' values.
 
@@ -436,15 +450,15 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
                            'pharming' => Pharming,
                            'messaging' => Messaging,
                            'dmarc_email_server' => DMARC]
-           left side is the parameter to be sent, right side is the way it will be shown in FraudWatch service.
+           left side is the parameter to be sent, right side is the way it will be shown in FraudWatch User Interface.
     - Reference ID: Reference ID to be associated to the reported incident. Should be unique.
                     Reference ID can be used later to retrieve specific incident by its reference id.
     - Primary URL(Required): Primary URL of the reported incident.
-    - Urls: Additional urls to be added to the reported incident.
+    - Urls: Additional urls in addition to primary URL to be associated to the reported incident.
     - Evidence: Evidence to be added (such as logs, etc...) to the reported incident.
     - Instructions: Additional instructions to be added for FraudWatch Security Team.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Not given or unknown brand.
     - Not given or unknown incident type.
     - Not given primary url.
@@ -483,12 +497,13 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     - Brand: Updates this to be the brand associated to the incident which corresponds to given incident id.
     - Reference ID: Reference ID to be associated to the incident which corresponds to given incident id.
                     Should be unique. Reference ID can be used later to retrieve specific incident by its reference id.
+    - Evidence: Evidence to be added (such as logs, etc...) to the incident.
     - Instructions: Add Additional instructions to be added for FraudWatch Security
                     Team to the incident which corresponds to given incident id.
 
-    At least one of 'Brand', 'Reference ID', 'Instructions' must be given.
+    At least one of 'Brand', 'Reference ID', 'Evidence', 'Instructions' must be given.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
     - Not given or unknown brand.
     - No data given.
@@ -527,7 +542,7 @@ def fraud_watch_incident_get_by_identifier_command(client: Client, args: Dict) -
 
     Exactly one of 'Incident ID', 'Reference ID' should be given, else DemistoException will be raised.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
     - Unknown reference_id id.
 
@@ -563,7 +578,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
     Gets forensic data of an incident which corresponds to the given incident ID:
     - Incident ID (Required): The ID of the incident to have its forensic data retrieved.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
 
     Args:
@@ -586,7 +601,7 @@ def fraud_watch_incident_forensic_get_command(client: Client, args: Dict) -> Com
         outputs_key_field='identifier',
         raw_response=raw_response,
         readable_output=tableToMarkdown("FraudWatch Incident Forensic Data", outputs,
-                                         removeNull=True)
+                                        removeNull=True)
     )
 
 
@@ -597,9 +612,9 @@ def fraud_watch_incident_contact_emails_list_command(client: Client, args: Dict)
     - Limit: Total number of contact emails in a page. The default limit is 20 and the maximum number is 200.
     - Page: Retrieve contact emails by the given page number.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
-    - Page index out of bounds
+    - Page index out of bounds.
 
     Args:
         client (Client): FraudWatch client to perform the API calls.
@@ -637,7 +652,7 @@ def fraud_watch_incident_messages_add_command(client: Client, args: Dict):
     - Incident ID (Required): The ID of the incident to add a message to its email contacts.
     - Message Content (Required): Content of the message.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
 
     Args:
@@ -666,7 +681,7 @@ def fraud_watch_incident_urls_add_command(client: Client, args: Dict) -> Command
     - Incident ID (Required): The ID of the incident to add additional urls to.
     - Urls: Additional urls to be added to the incident that matches 'Incident ID'.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
 
     Args:
@@ -701,7 +716,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
     - Incident ID (Required): The ID of the incident to add additional urls to.
     - File Attachment: Entry id of the attachment to be added to the incident which corresponds to Incident ID.
 
-    Known possible errors that could cause error to be returned by FraudWatch service:
+    Known errors that causes error to be returned by FraudWatch service:
     - Unknown incident id.
 
     Args:
@@ -738,7 +753,8 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
 def fraud_watch_brands_list_command(client: Client, args: Dict) -> CommandResults:
     """
     Gets a list of brands from FraudWatch service:
-    - Limit: Total number of brands in a page. The default limit is 20 and the maximum number is 100.
+    - Limit: Total number of brands in a page. The default limit is 20, minimum number is also 20
+             and the maximum number is 100.
     - Page: Retrieve brands by the given page number.
 
     Args:

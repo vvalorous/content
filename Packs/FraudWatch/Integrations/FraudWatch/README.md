@@ -33,7 +33,7 @@ Get list of incidents from FraudWatch service.
 
 | **Argument Name** | **Description** | **Required** |
 | --- | --- | --- |
-| brand | Retrieve incidents which corresponds to the given brand. Returns error if brand does not exist. | Optional | 
+| brand | Retrieve incidents which corresponds to the given brand. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command. | Optional | 
 | status | Retrieve incidents which corresponds to the given status. Possible values are: active, new, monitor, reactive, onhold, closed, closedmonitor, rejected, duplicate. | Optional | 
 | limit | Total number of Incidents in a page. Maximum number is 200. Default is 20. | Optional | 
 | page | Retrieve incidents by the given page number. | Optional | 
@@ -133,7 +133,7 @@ Get list of incidents from FraudWatch service.
                 ],
                 "brand": "Testing Brand 2",
                 "client": "Investec - Palo Alto",
-                "content_ip": "159.8.210.35",
+                "content_ip": "192.168.0.1",
                 "created_by": "Client",
                 "current_duration": "340758",
                 "date_closed": null,
@@ -161,7 +161,7 @@ Get list of incidents from FraudWatch service.
 >|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 >| JJJ-595483 | abc1234 | http://www.malicious.com | monitor | Vishing | Testing Brand 2 | Investec - Palo Alto |  | Client | client | 85882 | 2021-02-07T15:37:12.000Z | http://www.malicious2.com,<br/>http://www.malicious3.com,<br/>http://www.malicious4.com,<br/>http://www.malicious5.com | https://www.phishportal.com/client/incident/JJJ-595483 |
 >| JJJ-992295 | abc1234 | http://www.malicious.com | monitor | Vishing | Testing Brand 2 | Investec - Palo Alto |  | Client | client | 86649 | 2021-02-07T15:24:25.000Z | http://www.malicious2.com,<br/>http://www.malicious3.com,<br/>http://www.malicious4.com,<br/>http://www.malicious5.com | https://www.phishportal.com/client/incident/JJJ-992295 |
->| JJJ-302171 | malicious1 | http://malicious.com | monitor | Brand Abuse | Testing Brand 2 | Investec - Palo Alto | 159.8.210.35 | Client | client | 340758 | 2021-02-04T16:49:16.000Z | abuse.com | https://www.phishportal.com/client/incident/JJJ-302171 |
+>| JJJ-302171 | malicious1 | http://malicious.com | monitor | Brand Abuse | Testing Brand 2 | Investec - Palo Alto | 192.168.0.1 | Client | client | 340758 | 2021-02-04T16:49:16.000Z | abuse.com | https://www.phishportal.com/client/incident/JJJ-302171 |
 
 
 ### fraudwatch-incident-report
@@ -176,7 +176,7 @@ Report an incident to FraudWatch service.
 
 | **Argument Name** | **Description** | **Required** |
 | --- | --- | --- |
-| brand | The brand associated to the reported incident. | Required | 
+| brand | The brand associated to the reported incident. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command. | Required | 
 | type | The type of the incident to be associated to the reported incident. Returns error if brand does not exist. Possible values are: phishing, vishing, brand_abuse, malware, social_media_brand_abuse, mobile_app_unauthorized, pac_file, pharming, messaging, dmarc_email_server. | Required | 
 | reference_id | Reference ID to be associated to the reported incident. Should be unique. Reference ID can be used later to retrieve specific incident by its reference id. | Optional | 
 | primary_url | Primary URL of the reported incident. | Required | 
@@ -265,7 +265,7 @@ Updates the incident associated to the 'incident_id' with given arguments values
 | **Argument Name** | **Description** | **Required** |
 | --- | --- | --- |
 | incident_id | The ID of the incident to be updated. Incident ID is the 'identifier' field returned by command 'fraudwatch-incidents-list'. | Required | 
-| brand | Updates the incident associated to the 'incident_id' with brand given. | Optional | 
+| brand | Updates the incident associated to the 'incident_id' with brand given. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command. | Optional | 
 | reference_id | Updates the incident associated to the 'incident_id' with reference ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier' to retrieve specific incident's details by its reference id. | Optional | 
 | evidence | Evidence to be added (such as logs, etc...) to the reported incident. | Optional | 
 | instructions | Updates the incident associated to the 'incident_id' with additional instructions for FraudWatch Security Team. | Optional | 

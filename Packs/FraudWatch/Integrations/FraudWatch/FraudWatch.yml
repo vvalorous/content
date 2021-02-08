@@ -46,8 +46,7 @@ name: FraudWatch
 script:
   commands:
   - arguments:
-    - description: Retrieve incidents which corresponds to the given brand. Returns
-        error if brand does not exist.
+    - description: Retrieve incidents which corresponds to the given brand. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command.
       name: brand
     - auto: PREDEFINED
       description: Retrieve incidents which corresponds to the given status.
@@ -136,7 +135,7 @@ script:
       description: URL to the incident page in FraudWatch User Interface.
       type: String
   - arguments:
-    - description: The brand associated to the reported incident.
+    - description: The brand associated to the reported incident. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command.
       name: brand
       required: true
     - auto: PREDEFINED
@@ -239,7 +238,7 @@ script:
       name: incident_id
       required: true
     - description: Updates the incident associated to the 'incident_id' with brand
-        given.
+        given. Returns error if brand does not exist. List of existing brands can be retrieved by 'fraudwatch-brands-list' command.
       name: brand
     - description: Updates the incident associated to the 'incident_id' with reference
         ID given. Reference ID should be unique, and can be used by command 'fraudwatch-incident-get-by-identifier'
