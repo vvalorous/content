@@ -411,7 +411,7 @@ def fraud_watch_incident_report_command(client: Client, args: Dict) -> CommandRe
     raw_response = client.fraud_watch_incident_report(brand, incident_type, reference_id, primary_url, urls,
                                                       evidence, instructions)
 
-    return CommandResults(
+    CommandResults(
         outputs_prefix='FraudWatch.Incident',
         outputs=raw_response,
         outputs_key_field='identifier',
@@ -450,7 +450,7 @@ def fraud_watch_incident_update_command(client: Client, args: Dict) -> CommandRe
     instructions = args.get('instructions')
 
     if all(argument is None for argument in [brand, reference_id, instructions]):
-        raise DemistoException(f'No data was given to update for incident id: ({incident_id})')
+        raise DemistoException(f'No data was given to update for incident id: {incident_id}')
 
     raw_response = client.fraud_watch_incident_update(incident_id, brand, reference_id, instructions)
 
@@ -678,6 +678,7 @@ def fraud_watch_attachment_upload_command(client: Client, args: Dict):
 
     return CommandResults(
         raw_response=raw_response,
+        # change to name and not entry ID
         readable_output=f'### File entry {entry_id} was uploaded successfully to incident with incident id '
                         f'{incident_id}'
     )

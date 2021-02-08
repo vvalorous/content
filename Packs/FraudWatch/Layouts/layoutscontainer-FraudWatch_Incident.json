@@ -305,58 +305,88 @@
                         "i": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
                         "items": [
                             {
-                                "endCol": 2,
-                                "fieldId": "fraudwatchbrand",
-                                "height": 22,
-                                "id": "2ed90a50-655a-11eb-bdbc-f99feba6afb4",
-                                "index": 0,
-                                "sectionItemType": "field",
-                                "startCol": 0
-                            },
-                            {
+                                "dropEffect": "move",
                                 "endCol": 2,
                                 "fieldId": "fraudwatchreferenceid",
                                 "height": 22,
                                 "id": "31131bd0-655a-11eb-bdbc-f99feba6afb4",
+                                "index": 0,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
+                                "sectionItemType": "field",
+                                "startCol": 0
+                            },
+                            {
+                                "dropEffect": "move",
+                                "endCol": 2,
+                                "fieldId": "fraudwatchbrand",
+                                "height": 22,
+                                "id": "2ed90a50-655a-11eb-bdbc-f99feba6afb4",
                                 "index": 1,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
                                 "sectionItemType": "field",
                                 "startCol": 0
                             },
                             {
                                 "endCol": 2,
-                                "fieldId": "fraudwatchabuseurl",
+                                "fieldId": "fraudwatchabusetype",
                                 "height": 22,
-                                "id": "323813d0-655a-11eb-bdbc-f99feba6afb4",
+                                "id": "8ddc1e50-6a16-11eb-818c-c7ce08fd47ee",
                                 "index": 2,
                                 "sectionItemType": "field",
                                 "startCol": 0
                             },
                             {
+                                "dropEffect": "move",
                                 "endCol": 2,
-                                "fieldId": "destinationhostname",
+                                "fieldId": "fraudwatchabuseurl",
                                 "height": 22,
-                                "id": "34de0680-655a-11eb-bdbc-f99feba6afb4",
+                                "id": "323813d0-655a-11eb-bdbc-f99feba6afb4",
                                 "index": 3,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
                                 "sectionItemType": "field",
                                 "startCol": 0
                             },
                             {
+                                "dropEffect": "move",
                                 "endCol": 2,
+                                "fieldId": "fraudwatchadditionalurls",
+                                "height": 44,
+                                "id": "aeb033a0-6a16-11eb-818c-c7ce08fd47ee",
+                                "index": 5,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
+                                "sectionItemType": "field",
+                                "startCol": 0
+                            },
+                            {
+                                "dropEffect": "move",
+                                "endCol": 4,
                                 "fieldId": "country",
                                 "height": 22,
                                 "id": "39a6b220-655a-11eb-bdbc-f99feba6afb4",
-                                "index": 4,
+                                "index": 0,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
                                 "sectionItemType": "field",
-                                "startCol": 0
+                                "startCol": 2
                             },
                             {
-                                "endCol": 2,
+                                "dropEffect": "move",
+                                "endCol": 4,
                                 "fieldId": "timezone",
                                 "height": 22,
                                 "id": "43f8c150-655a-11eb-bdbc-f99feba6afb4",
-                                "index": 5,
+                                "index": 1,
+                                "listId": "caseinfoid-1c57f300-655a-11eb-bdbc-f99feba6afb4",
                                 "sectionItemType": "field",
-                                "startCol": 0
+                                "startCol": 2
+                            },
+                            {
+                                "endCol": 4,
+                                "fieldId": "destinationhostname",
+                                "height": 22,
+                                "id": "34de0680-655a-11eb-bdbc-f99feba6afb4",
+                                "index": 4,
+                                "sectionItemType": "field",
+                                "startCol": 2
                             }
                         ],
                         "maxW": 3,

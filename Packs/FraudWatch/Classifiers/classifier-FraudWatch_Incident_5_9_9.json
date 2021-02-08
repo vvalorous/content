@@ -15,7 +15,7 @@
                     "complex": null,
                     "simple": "host"
                 },
-                "FraudWatch Abuse Url": {
+                "FraudWatch Abuse URL": {
                     "complex": null,
                     "simple": "url"
                 },
@@ -38,6 +38,14 @@
                 "Timezone": {
                     "complex": null,
                     "simple": "host_timezone"
+                },
+                "FraudWatch Abuse Type": {
+                    "complex": null,
+                    "simple": "type"
+                },
+                "FraudWatch Additional URLs": {
+                    "complex": null,
+                    "simple": "additional_urls"
                 }
             }
         }
