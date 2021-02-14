@@ -29,7 +29,6 @@ class Client(BaseClient):
 
     def __init__(self, api_key: str, base_url: str, verify: bool, proxy: bool):
         self.api_key = api_key
-        # bearer_token = self.get_bearer_token()
         self.base_headers = {
             'Authorization': f'Bearer {api_key}',
             'Accept': 'application/json'
@@ -61,32 +60,6 @@ class Client(BaseClient):
             files=files,
             error_handler=fraud_watch_error_handler
         )
-
-    # def get_bearer_token(self):
-    #     """
-    #     Login using the credentials and store the cookie
-    #     """
-    #     integration_context = demisto.getIntegrationContext()
-    #     bearer_token = integration_context.get('bearer_token', self.api_key)
-    #     valid_until = get_time_parameter(integration_context.get('valid_until'))
-    #     utc_time_now = datetime.now(timezone.utc)
-    #
-    #     if bearer_token and valid_until:
-    #         if utc_time_now < valid_until:
-    #             # Bearer Token is still valid - did not expire yet
-    #             return bearer_token
-    #
-    #     response = self.http_request(method='POST', url_suffix='token/refresh')
-    #     bearer_token = response.get('token')
-    #     expiration_time = response.get('expiry')
-    #
-    #     new_integration_context = {
-    #         'bearer_token': bearer_token,
-    #         'valid_until': expiration_time
-    #     }
-    #     demisto.setIntegrationContext(new_integration_context)
-    #
-    #     return bearer_token
 
     def fraud_watch_incidents_list(self, brand: Optional[str], status: Optional[str], page: Optional[int],
                                    limit: Optional[int], from_date: Optional[str], to_date: Optional[str]):
@@ -219,7 +192,10 @@ def fraud_watch_error_handler(res: Any):
         if not fraud_watch_error_reason:
             err_msg += '\n{}'.format(json.dumps(error_entry))
         else:
-            err_msg += f'\n{fraud_watch_error_reason}'
+            if res.status_code == 403:
+                err_msg += '\nMake sure your API token is valid and did not expire.'
+            else:
+                err_msg += f'\n{fraud_watch_error_reason}'
         raise DemistoException(err_msg, res=res)
     except ValueError:
         err_msg += '\n{}'.format(res.text)
