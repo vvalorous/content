@@ -12,7 +12,7 @@ This integration was integrated and tested with version v1 of FraudWatch Phishpo
     | Fetch incidents |  | False |
     | Incident type |  | False |
     | Incidents Fetch Interval |  | False |
-    | First fetch timestamp | format: \(&amp;lt;number&amp;gt; &amp;lt;time unit&amp;gt;, e.g., 12 hours, 7 days\) | False |
+    | First fetch timestamp | format: \(`<number>` `<time unit>`, e.g., 12 hours, 7 days\) | False |
     | Maximum Incidents To Fetch |  | False |
     | Trust any certificate (not secure) |  | False |
     | Use system proxy settings |  | False |

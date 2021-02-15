@@ -303,7 +303,8 @@
           "subject": "Outgoing email recorded",
           "creator": "FraudWatch",
           "content": "Dear Investec - Palo Alto\r\n\r\nPlease find the details of the following new Phishing incident:\r\n\r\n----------------------\r\nURL: malicious .com\r\nBrand Targeted: Testing Brand 1\r\n\r\nWeb Host: \r\nWeb Host Country: \r\n\r\nType: Phishing\r\n----------------------\r\n\r\nWe are working to have this site taken down ASAP.\r\n\r\n\r\nYou can view details of this incident by logging into PhishPortal (https://www.phishportal.com).\r\n\r\nRegards,\r\nSecurity Operations\r\nFraudWatch International\r\nTel USA: +1-415-449-8800 Ext 200\r\nTel AUS: +613 9887 6777\r\nFax: +613 8660 2688\r\nEmail: security@fraudwatchinternational.com\r\nhttp://www.fraudwatchinternational.com\r\n",
-          "date": "2020-12-09T07:52:07.000Z"
+          "date": "2020-12-09T07:52:07.000Z",
+          "identifier": "JJJ-123123"
         }
       ]
     },

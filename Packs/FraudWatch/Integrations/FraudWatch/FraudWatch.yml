@@ -1,4 +1,4 @@
-category: Utilities
+category: Data Enrichment & Threat Intelligence
 commonfields:
   id: FraudWatch
   version: -1
@@ -68,7 +68,7 @@ script:
       name: page
     - description: "Retrieve alerts that their date opened is higher or equal
          to 'from' value. Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
-          If 'to' argument is not given, default value for 'to' is current day."
+          If 'to' argument is not given, default value for 'to' is current time."
       name: from
     - description: "Retrieve alerts that their date opened is lower or equal to
          'to' value. Supports ISO and time range (<number> <time unit>, e.g., 12 hours, 7 days) formats.
@@ -161,7 +161,7 @@ script:
     - description: Primary URL of the reported incident.
       name: primary_url
       required: true
-    - description: Comma seperated list. Additional urls in addition to 'primary_url'
+    - description: Comma separated list of additional urls in addition to 'primary_url'
         to be associated with the reported incident.
       isArray: true
       name: urls
@@ -413,6 +413,7 @@ script:
         associated to 'incident_id'.
       name: urls
       required: true
+      isArray: true
     description: Adds additional URLs to the incident associated to the given incident
       ID. Fails if one of the urls given already exists.
     name: fraudwatch-incident-urls-add
