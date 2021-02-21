@@ -1160,10 +1160,10 @@ def get_remote_data_command(service, args, close_incident):
         })
 
     demisto.info('Updated notable {}'.format(notable_id))
-    return GetRemoteDataResponse(
+    return_results(GetRemoteDataResponse(
         mirrored_object=updated_notable,
         entries=entries
-    )
+    ))
 
 
 def get_modified_remote_data_command(service, args):
@@ -1189,7 +1189,7 @@ def get_modified_remote_data_command(service, args):
     for item in results.ResultsReader(service.jobs.oneshot(search)):
         modified_notable_ids.append(item['rule_id'])
 
-    return GetModifiedRemoteDataResponse(modified_incident_ids=modified_notable_ids)
+    return_results(GetModifiedRemoteDataResponse(modified_incident_ids=modified_notable_ids))
 
 
 def main():
@@ -1273,15 +1273,15 @@ def main():
             kv_store_collection_data_delete(service)
         elif command == 'splunk-kv-store-collection-delete-entry':
             kv_store_collection_delete_entry(service)
-    if demisto.command() == 'get-mapping-fields':
+    elif command == 'get-mapping-fields':
         if argToBoolean(demisto.params().get('use_cim', False)):
             get_cim_mapping_field_command()
         else:
             get_mapping_fields_command(service)
     elif command == 'get-remote-data':
-        return_results(get_remote_data_command(service, demisto.args(), demisto.params().get('close_incident')))
+        get_remote_data_command(service, demisto.args(), demisto.params().get('close_incident'))
     elif command == 'get-modified-remote-data':
-        return_results(get_modified_remote_data_command(service, demisto.args()))
+        get_modified_remote_data_command(service, demisto.args())
     else:
         raise NotImplementedError('Command not implemented: {}'.format(command))
 
