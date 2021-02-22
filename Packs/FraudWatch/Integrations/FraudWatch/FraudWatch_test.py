@@ -150,7 +150,7 @@ def test_commands_get_methods(requests_mock, command_function: Callable[[Client,
      - expected CommandResults object to be returned from the command function.
 
     When:
-     - Executing a command
+     - Executing a command.
 
     Then:
      - Ensure that the expected CommandResults object is returned by the command function.
@@ -190,7 +190,7 @@ def test_commands_put_methods(requests_mock, command_function: Callable[[Client,
      - expected CommandResults object to be returned from the command function.
 
     When:
-     - Executing a command
+     - Executing a command.
 
     Then:
      - Ensure that the expected CommandResults object is returned by the command function.
@@ -241,7 +241,7 @@ def test_commands_post_methods(requests_mock, command_function: Callable[[Client
      - Expected CommandResults object to be returned from the command function.
 
     When:
-     - Executing a command
+     - Executing a command.
 
     Then:
      - Ensure that the expected CommandResults object is returned by the command function.
@@ -262,20 +262,19 @@ def test_commands_post_methods(requests_mock, command_function: Callable[[Client
     assert returned_command_results.outputs == expected_command_results.outputs
 
 
-def test_fetch_incidents_command(mocker):
+def test_fetch_incidents_command():
     """
     Given:
-     - Command function.
-     - Demisto arguments.
-     - URL suffix of the Nutanix service endpoint that the command function will use (needed to mock the request).
-     - Response returned from Nutanix.
-     - Expected CommandResults object to be returned from the command function.
+    - FraudWatch client.
+    - Last run parameters.
 
     When:
-     - Executing a command
+     - Fetching incidents.
 
     Then:
-     - Ensure that the expected CommandResults object is returned by the command function.
+     - Ensure that on first call to fetch_incidents, only day ago or later are fetched.
+     - Ensure on another calls to fetch_incidents, only relevant incidents are fetched.
+     - Ensure that the incidents returned are as expected.
     """
     now = datetime.now(timezone.utc)
     five_minutes_before = now - timedelta(minutes=5)
