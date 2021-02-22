@@ -1,5 +1,6 @@
 import pytz
 import urllib3
+
 import demistomock as demisto  # noqa: F401
 from CommonServerPython import *  # noqa: F401
 
@@ -287,67 +288,74 @@ def get_time_parameter(arg: Optional[str], parse_format: bool = False):
 ''' COMMAND FUNCTIONS '''
 
 
-def fetch_incidents_command(client: Client, params: Dict):
+def fetch_incidents_command(client: Client, params: Dict, last_run: Dict):
     """
-    Retrieves new incidents from FraudWatch.
+    Fetches new incidents from FraudWatch.
+    Because of FraudWatch limitation, such as 'from_date' being accurate only by day, and incidents returned
+    are not ordered by their date opened.
+    1) First_fetch time is limited to 1 day.
+    2) Every fetch_incidents call, we will fetch all the pages from the day of the time stamp saved in last run.
+    3) Filter all incidents that their date opened was earlier than last saved time stamp.
+    4) Sort the remained incidents by their date opened.
+    5) Return the first 'max_fetch' incidents in the sorted list.
+    Limiting first_fetch is needed because we must traverse all incidents that might be relevant, therefore the
+    list cannot be very large.
     Uses Demisto last run parameters in the following way:
-    - 'last_fetch_day' - The latest day fetching was done. Used in 'from_date' to the API call
-       to fetch only incidents from the relevant day and forward, as any date before 'last_fetch_day'
-       have already been fetched or skipped intentionally and there is no need to fetch incidents
-       before 'last_fetch_day'.
-    - 'last_fetch_date_time' - The latest time fetching was done. Because FraudWatch API 'from_date' is accurate
-       per day, and fetching incidents usually happens more than once a day, this is needed to make sure that
-       same incident is not fetched more than once.
+    - 'last_fetch_time' - The latest time fetching was done. Keeps track of incidents to be fetched by their date.
 
     Args:
         client (Client): FraudWatch client to perform API call to fetch incidents.
         params (Dict): Demisto params.
+        last_run (Dict): Demisto last run.
 
     Returns:
-        (list, dict): A tuple of Incidents that have been fetched, and the new run parameters.
+        (List[Dict], Dict): Incidents and new run parameters.
     """
-    last_run = demisto.getLastRun()
     brand = params.get('brand')
     status = params.get('status')
-    limit = params.get('max_fetch')
+    limit = int(params.get('max_fetch', 50))
 
-    fetch_time_string = params.get('first_fetch', '7 days').strip()
-    first_fetch_time = get_time_parameter(fetch_time_string)
-    from_date = last_run.get('last_fetch_day', first_fetch_time.strftime(FRAUD_WATCH_DATE_FORMAT))
-    to_date = datetime.now(timezone.utc).strftime(FRAUD_WATCH_DATE_FORMAT)
-    last_fetch_time = arg_to_datetime(last_run.get('last_fetch_date_time', first_fetch_time.isoformat()))
+    date_now = datetime.now(timezone.utc)
+    yesterday = date_now - timedelta(1)
+    fetch_time_string = params.get('first_fetch', '1 days').strip()
+    minimum_date_opened_str = last_run.get('last_fetch_time', fetch_time_string)
+    minimum_date_opened = get_time_parameter(minimum_date_opened_str)
+    if minimum_date_opened < yesterday:
+        minimum_date_opened = yesterday
+    from_date = minimum_date_opened.strftime(FRAUD_WATCH_DATE_FORMAT)
+    to_date = date_now.strftime(FRAUD_WATCH_DATE_FORMAT)
+    incidents = []
 
-    raw_response = client.incidents_list(brand=brand, status=status, page=None, limit=limit,
-                                         from_date=from_date, to_date=to_date)
+    # Need to fetch all incidents because FraudWatch does not sort incidents based on dates.
+    current_page = 1
+    while True:
+        raw_response = client.incidents_list(brand=brand, status=status, page=current_page, limit=200,
+                                             from_date=from_date, to_date=to_date)
+        if raw_response.get('error'):
+            raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
+        temp_incidents = raw_response.get('incidents', [])
+        if not temp_incidents:
+            break
+        incidents += temp_incidents
+        current_page += 1
 
-    if raw_response.get('error'):
-        raise DemistoException(f'''Error occurred during the call to FraudWatch: {raw_response.get('error')}''')
+    incidents = [incident for incident in incidents
+                 if get_time_parameter(incident.get('date_opened')) > minimum_date_opened]
+    incidents.sort(key=lambda incident: incident.get('date_opened'))
+    num_of_incidents_to_fetch = limit if limit <= len(incidents) else len(incidents)
+    incidents = incidents[:num_of_incidents_to_fetch]
 
-    incidents = raw_response.get('incidents')
+    incidents_obj_list: List[Dict[str, Any]] = [{
+        'name': f'''{incident.get('brand')}:{incident.get('identifier')}''',
+        'type': 'FraudWatch Incident',
+        'occurred': incident.get('date_opened'),
+        'rawJSON': json.dumps(incident)
+    } for incident in incidents]
 
-    incidents_obj_list: List[Dict[str, Any]] = []
-    for incident in incidents:
-        try:
-            incident_date_opened = get_time_parameter(incident.get('date_opened'))
-            if incident_date_opened < last_fetch_time:
-                continue
-        except Exception as e:
-            raise e
-
-        incident_obj = {
-            'name': f'''{incident.get('brand')}:{incident.get('identifier')}''',
-            'type': 'FraudWatch Incident',
-            'occurred': incident.get('date_opened'),
-            'rawJSON': json.dumps(incident)
-        }
-
-        incidents_obj_list.append(incident_obj)
-
-    current_time = datetime.now(timezone.utc)
-    return incidents_obj_list, {
-        'last_fetch_day': current_time.strftime(FRAUD_WATCH_DATE_FORMAT),
-        'last_fetch_date_time': current_time.isoformat()
+    next_run = {
+        'last_fetch_time': incidents[-1].get('date_opened') if incidents else minimum_date_opened_str
     }
+    return incidents_obj_list, next_run
 
 
 def test_module(client: Client, params: Dict) -> str:
@@ -365,7 +373,7 @@ def test_module(client: Client, params: Dict) -> str:
         (str): 'ok' if test passed, anything else will fail the test.
     """
     try:
-        fetch_incidents_command(client, params)
+        fetch_incidents_command(client, params, {})
         return 'ok'
     except DemistoException as e:
         if 'Forbidden' in str(e) or 'Authorization' in str(e):
@@ -797,7 +805,7 @@ def main() -> None:
             return_results(test_module(client, params))
 
         elif command == 'fetch-incidents':
-            incidents, next_run = fetch_incidents_command(client, params)
+            incidents, next_run = fetch_incidents_command(client, params, demisto.getLastRun())
             demisto.setLastRun(next_run)
             demisto.incidents(incidents)
 

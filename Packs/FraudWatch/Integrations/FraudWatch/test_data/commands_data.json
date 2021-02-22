@@ -1,4 +1,51 @@
 {
+  "fetch-incidents": {
+    "response": {
+      "pagination": {
+        "page": 1,
+        "items_per_page": "2",
+        "total": "31"
+      },
+      "incidents": [
+        {
+          "identifier": "JJJ-444222",
+          "reference_id": "123aaa",
+          "url": "http://www.malicious.com",
+          "status": "new",
+          "type": "Phishing",
+          "brand": "Testing Brand 1",
+          "link": "https://www.phishportal.com/client/incident/JJJ-444222"
+        },
+        {
+          "identifier": "JJJ-444223",
+          "reference_id": "a",
+          "url": "http://www.malicious2.com",
+          "status": "new",
+          "type": "Vishing",
+          "brand": "Testing Brand 2",
+          "link": "https://www.phishportal.com/client/incident/JJJ-444223"
+        },
+        {
+          "identifier": "JJJ-444224",
+          "reference_id": "b",
+          "url": "http://www.malicious3.com",
+          "status": "new",
+          "type": "Phishing",
+          "brand": "Testing Brand 3",
+          "link": "https://www.phishportal.com/client/incident/JJJ-444224"
+        },
+        {
+          "identifier": "JJJ-444225",
+          "reference_id": "c",
+          "url": "http://www.malicious.com",
+          "status": "new",
+          "type": "Phishing",
+          "brand": "Testing Brand 4",
+          "link": "https://www.phishportal.com/client/incident/JJJ-444225"
+        }
+      ]
+    }
+  },
   "fraudwatch-incidents-list": {
     "suffix": "incidents",
     "response": {

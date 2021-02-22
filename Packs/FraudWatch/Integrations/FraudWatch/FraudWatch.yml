@@ -21,12 +21,12 @@ configuration:
   name: incidentFetchInterval
   required: false
   type: 19
-- defaultvalue: 7 days
+- defaultvalue: 1 day
   display: First fetch timestamp
   name: first_fetch
   required: false
   type: 0
-  additionalinfo: 'format: (<number> <time unit>, e.g., 12 hours, 7 days)'
+  additionalinfo: 'format: (<number> <time unit>, e.g., 12 hours, 1 day). Due to limitations in FraudWatch API, first fetch timestamp can be at most 1 day.'
 - defaultvalue: '50'
   name: max_fetch
   required: false

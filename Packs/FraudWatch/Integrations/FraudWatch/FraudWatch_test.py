@@ -4,13 +4,14 @@
 import io
 import json
 from typing import *
-
+from unittest.mock import Mock
 import pytest
 import pytz
+from datetime import timezone, timedelta
 
 from CommonServerPython import DemistoException, datetime, CommandResults
 from FraudWatch import get_and_validate_positive_int_argument, get_time_parameter, Client, \
-    fraud_watch_incidents_list_command, fraud_watch_incident_get_by_identifier_command, \
+    fraud_watch_incidents_list_command, fraud_watch_incident_get_by_identifier_command, fetch_incidents_command, \
     fraud_watch_incident_forensic_get_command, fraud_watch_incident_contact_emails_list_command, \
     fraud_watch_brands_list_command, fraud_watch_incident_report_command, fraud_watch_incident_update_command, \
     fraud_watch_incident_messages_add_command, fraud_watch_incident_urls_add_command, BASE_URL, MINIMUM_POSITIVE_VALUE
@@ -259,3 +260,68 @@ def test_commands_post_methods(requests_mock, command_function: Callable[[Client
     assert returned_command_results.outputs_prefix == expected_command_results.outputs_prefix
     assert returned_command_results.outputs_key_field == expected_command_results.outputs_key_field
     assert returned_command_results.outputs == expected_command_results.outputs
+
+
+def test_fetch_incidents_command(mocker):
+    """
+    Given:
+     - Command function.
+     - Demisto arguments.
+     - URL suffix of the Nutanix service endpoint that the command function will use (needed to mock the request).
+     - Response returned from Nutanix.
+     - Expected CommandResults object to be returned from the command function.
+
+    When:
+     - Executing a command
+
+    Then:
+     - Ensure that the expected CommandResults object is returned by the command function.
+    """
+    now = datetime.now(timezone.utc)
+    five_minutes_before = now - timedelta(minutes=5)
+    one_hour_before = now - timedelta(hours=1)
+    two_hours_before = now - timedelta(hours=2)
+    two_days_before = now - timedelta(days=2)
+
+    mock_response = command_tests_data['fetch-incidents']['response']
+    mock_response['incidents'][0]['date_opened'] = five_minutes_before.isoformat()
+    mock_response['incidents'][1]['date_opened'] = one_hour_before.isoformat()
+    mock_response['incidents'][2]['date_opened'] = two_hours_before.isoformat()
+    mock_response['incidents'][3]['date_opened'] = two_days_before.isoformat()
+
+    client.incidents_list = Mock()
+    client.incidents_list.side_effect = [
+        mock_response,
+        {'pagination': {}, 'incidents': []},
+        mock_response,
+        {'pagination': {}, 'incidents': []},
+        mock_response,
+        {'pagination': {}, 'incidents': []}
+    ]
+
+    incidents, next_run = fetch_incidents_command(client, {'max_fetch': 2, 'first_fetch': '5 days'}, {})
+    assert incidents == [
+        {'name': f'''{mock_response['incidents'][2].get('brand')}:{mock_response['incidents'][2].get('identifier')}''',
+         'type': 'FraudWatch Incident',
+         'occurred': mock_response['incidents'][2].get('date_opened'),
+         'rawJSON': json.dumps(mock_response['incidents'][2])
+         },
+        {'name': f'''{mock_response['incidents'][1].get('brand')}:{mock_response['incidents'][1].get('identifier')}''',
+         'type': 'FraudWatch Incident',
+         'occurred': mock_response['incidents'][1].get('date_opened'),
+         'rawJSON': json.dumps(mock_response['incidents'][1])
+         }
+    ]
+    assert next_run == {'last_fetch_time': one_hour_before.isoformat()}
+    incidents, next_run = fetch_incidents_command(client, {'max_fetch': 2}, next_run)
+    assert incidents == [
+        {'name': f'''{mock_response['incidents'][0].get('brand')}:{mock_response['incidents'][0].get('identifier')}''',
+         'type': 'FraudWatch Incident',
+         'occurred': mock_response['incidents'][0].get('date_opened'),
+         'rawJSON': json.dumps(mock_response['incidents'][0])
+         }
+    ]
+    assert next_run == {'last_fetch_time': five_minutes_before.isoformat()}
+    incidents, next_run = fetch_incidents_command(client, {'max_fetch': 2}, next_run)
+    assert incidents == []
+    assert next_run == {'last_fetch_time': five_minutes_before.isoformat()}

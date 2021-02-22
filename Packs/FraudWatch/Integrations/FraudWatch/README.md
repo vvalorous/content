@@ -12,7 +12,7 @@ This integration was integrated and tested with version v1 of FraudWatch Phishpo
     | Fetch incidents |  | False |
     | Incident type |  | False |
     | Incidents Fetch Interval |  | False |
-    | First fetch timestamp | format: \(`<number>` `<time unit>`, e.g., 12 hours, 7 days\) | False |
+    | First fetch timestamp | format: \(`<number>` `<time unit>`, e.g., 12 hours, 1 day\) | False |
     | Maximum Incidents To Fetch |  | False |
     | Trust any certificate (not secure) |  | False |
     | Use system proxy settings |  | False |
@@ -37,8 +37,8 @@ Get list of incidents from FraudWatch service.
 | status | Retrieve incidents which corresponds to the given status. Possible values are: active, new, monitor, reactive, onhold, closed, closedmonitor, rejected, duplicate. | Optional | 
 | limit | Total number of Incidents in a page. Maximum number is 200. Default is 20. | Optional | 
 | page | Retrieve incidents by the given page number. | Optional | 
-| from | Retrieve alerts that their date opened is higher or equal to 'from' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 days) formats. If 'to' argument is not given, default value for 'to' is current day. | Optional | 
-| to | Retrieve alerts that their date opened is lower or equal to 'to' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 days) formats. If 'from' argument is not given, default value for 'from' is 12 months before 'to'. | Optional | 
+| from | Retrieve alerts that their date opened is higher or equal to 'from' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 day) formats. If 'to' argument is not given, default value for 'to' is current day. | Optional | 
+| to | Retrieve alerts that their date opened is lower or equal to 'to' value. Supports ISO and time range (&lt;number&gt; &lt;time unit&gt;, e.g., 12 hours, 7 day) formats. If 'from' argument is not given, default value for 'from' is 12 months before 'to'. | Optional | 
 
 
 #### Context Output
